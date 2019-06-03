@@ -2,7 +2,7 @@ import * as React                                                         from '
 import {createStyles, Divider, Paper, Typography, WithStyles, withStyles} from '@material-ui/core';
 import {IPlayer}                                                          from '../types/utils';
 import PlayerCard                                                         from './PlayerCard';
-import {IRuleSet}                                                         from '../types/game';
+import {EGamePhase, IRuleSet}                                             from '../types/game';
 
 const styles = () => createStyles({
   root: {
@@ -24,20 +24,40 @@ interface IProps extends WithStyles<typeof styles> {
   black: IPlayer,
   local: boolean,
   ruleSet: IRuleSet,
+  gamePhase: EGamePhase,
+  moveNumber: number,
+}
+
+function statusString(phase: EGamePhase): string {
+  switch (phase) {
+    case EGamePhase.Canceled:
+      return 'game has been cancelled';
+    case EGamePhase.WhiteVictory:
+      return 'white is victorious';
+    case EGamePhase.BlackVictory:
+      return 'black is victorious';
+    case EGamePhase.Waiting:
+      return 'waiting for a second player...';
+    case EGamePhase.Running:
+      return 'game in progress';
+
+  }
 }
 
 const SidePanel: React.FC<IProps> = (props) => {
-  const {classes, black, white, ruleSet} = props;
+  const {classes, black, white, ruleSet, gamePhase, moveNumber} = props;
+
   return (
     <Paper square={true} className={classes.root}>
       <PlayerCard player={black} color={'black'}/>
       <Divider component={'hr'}/>
       <Typography variant={'body2'} align={'center'} className={classes.center}>
-        {ruleSet.size.x}&times;{ruleSet.size.y}
+        move {moveNumber + 1}
+        &nbsp;&bull;&nbsp;{ruleSet.size.x}&times;{ruleSet.size.y}
         &nbsp;&bull;&nbsp;{ruleSet.komi} komi
         &nbsp;&bull;&nbsp;{ruleSet.handicap || 'no'} handicap<br/>
         <i>
-          Game is currently waiting to start
+          {statusString(gamePhase)}
         </i>
       </Typography>
       <Divider component={'hr'}/>

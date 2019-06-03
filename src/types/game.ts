@@ -24,7 +24,13 @@ export interface ISize {
   y: number,
 }
 
-export enum EGamePhase {Waiting = 'waiting', Running = 'running'}
+export enum EGamePhase {
+  Waiting,
+  Running,
+  Canceled,
+  WhiteVictory,
+  BlackVictory,
+}
 
 export enum EColor {
   Black = 1,
