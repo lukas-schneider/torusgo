@@ -7,44 +7,44 @@ import {flipField, testPosition} from '../utils/gameLogic';
 describe('testPosition', () => {
   // test a position with the given board and the inverted board
   function testWhite(size: IPosition,
-                     board: TGameBoard,
-                     koPosition: TKo,
-                     pos: IPosition,
-                     truthValue: boolean) {
+    board: TGameBoard,
+    koPosition: TKo,
+    pos: IPosition,
+    truthValue: boolean) {
     expect(testPosition(
-        size,
-        board,
-        koPosition,
-        EColor.White,
-        pos,
+      size,
+      board,
+      koPosition,
+      EColor.White,
+      pos,
     )).toEqual(truthValue);
     expect(testPosition(
-        size,
-        board.map((field) => flipField(field)),
-        koPosition,
-        EColor.Black,
-        pos,
+      size,
+      board.map((field) => flipField(field)),
+      koPosition,
+      EColor.Black,
+      pos,
     )).toEqual(truthValue);
   }
 
   function testBlack(size: IPosition,
-                     board: TGameBoard,
-                     koPosition: TKo,
-                     pos: IPosition,
-                     truthValue: boolean) {
+    board: TGameBoard,
+    koPosition: TKo,
+    pos: IPosition,
+    truthValue: boolean) {
     expect(testPosition(
-        size,
-        board,
-        koPosition,
-        EColor.Black,
-        pos,
+      size,
+      board,
+      koPosition,
+      EColor.Black,
+      pos,
     )).toEqual(truthValue);
     expect(testPosition(
-        size,
-        board.map((field) => flipField(field)),
-        koPosition,
-        EColor.White,
-        pos,
+      size,
+      board.map((field) => flipField(field)),
+      koPosition,
+      EColor.White,
+      pos,
     )).toEqual(truthValue);
   }
 

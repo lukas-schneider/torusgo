@@ -3,9 +3,9 @@ import {Vector2, Vector3, Vector4} from 'three';
 // this implements the same raycasting as in the TorusMaterialBoarayDirection shader
 
 const iTorus = (
-    rayStart: Vector4,
-    rayDirection: Vector4,
-    torus: Vector2,
+  rayStart: Vector4,
+  rayDirection: Vector4,
+  torus: Vector2,
 ): number => {
 
   const Ra2 = torus.x * torus.x;
@@ -95,8 +95,8 @@ const iTorus = (
 
 const sdTorus = (pos: Vector4, torus: Vector2): number => {
   const q = new Vector2(
-      Math.sqrt(pos.x * pos.x + pos.y * pos.y) - torus.x,
-      pos.z,
+    Math.sqrt(pos.x * pos.x + pos.y * pos.y) - torus.x,
+    pos.z,
   );
   return q.length() - torus.y;
 };
@@ -106,18 +106,18 @@ const nTorus = (pos: Vector4, torus: Vector2): Vector4 => {
   const magicVector = new Vector3(1, 1, -1).multiplyScalar(magicValue);
   // there is no component wise multiplication for Vector4 :D
   return new Vector4(
-      pos.x * magicVector.x,
-      pos.y * magicVector.y,
-      pos.z * magicVector.z,
-      0,
+    pos.x * magicVector.x,
+    pos.y * magicVector.y,
+    pos.z * magicVector.z,
+    0,
   );
 };
 
 export default function (
-    rayStart: Vector4,
-    rayDirection: Vector4,
-    torus: Vector2,
-    polishIters = 10,
+  rayStart: Vector4,
+  rayDirection: Vector4,
+  torus: Vector2,
+  polishIters = 10,
 ): number {
 
   let t = iTorus(rayStart, rayDirection, torus);

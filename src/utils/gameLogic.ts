@@ -109,7 +109,7 @@ function setField(size: ISize, board: TGameBoard, field: TField, pos: IPosition)
 // to only find positions that have a certain field value
 // or to make sure that no loops happen in depth searches
 function getNeighPosArray(pos: IPosition,
-                          posFilter = (potentialNeigh: IPosition) => true): IPosition[] {
+  posFilter = (potentialNeigh: IPosition) => true): IPosition[] {
   return [
     {
       x: pos.x - 1,
@@ -180,16 +180,16 @@ function canonAndRemoveDups(size: ISize, positions: IPosition[]): IPosition[] {
 // can be passed a filter which will usually just check for correct field
 // THE STARTING POSITION WILL NOT BE FILTERED
 function getGroupWithFilter(size: ISize,
-                            filter: (pos: IPosition) => boolean,
-                            startingPos: IPosition): IPosition[] {
+  filter: (pos: IPosition) => boolean,
+  startingPos: IPosition): IPosition[] {
   return getGroupWithFilterRecursive(size, filter, [], [canonPos(size, startingPos)]);
 }
 
 // members and newMembers always canonical
 function getGroupWithFilterRecursive(size: ISize,
-                                     filter: (pos: IPosition) => boolean,
-                                     members: IPosition[],
-                                     newMembers: IPosition[]): IPosition[] {
+  filter: (pos: IPosition) => boolean,
+  members: IPosition[],
+  newMembers: IPosition[]): IPosition[] {
 
   // nothing new found end recursion
   if (newMembers.length === 0) {
@@ -202,17 +202,17 @@ function getGroupWithFilterRecursive(size: ISize,
   // we don't want to add previously visited positions -> infinite loop
   // also apply the passed filter
   const neighFilter = (potentialNeigh: IPosition): boolean => !posInArray(
-      membersNext,
-      canonPos(
-          size,
-          potentialNeigh,
-      ),
+    membersNext,
+    canonPos(
+      size,
+      potentialNeigh,
+    ),
   ) && filter(potentialNeigh);
 
   // get the wanted unvisited neighbors of all newMembers
   const newMembersSameFieldNeighArrays = newMembers.map((newMember: IPosition): IPosition[] => getNeighPosArray(
-      newMember,
-      neighFilter,
+    newMember,
+    neighFilter,
   ));
 
   // flatten result & remove duplicates
@@ -227,21 +227,21 @@ function getGroupWithFilterRecursive(size: ISize,
 // adjecent to the connected group
 // only makes sense to call this with a color
 function groupEmptyPositions(size: ISize,
-                             board: TGameBoard,
-                             color: EColor,
-                             pos: IPosition): IPosition[] {
+  board: TGameBoard,
+  color: EColor,
+  pos: IPosition): IPosition[] {
 
   // only same color ofc
   const group = getGroupWithFilter(
-      size,
-      (potentialMember) => getField(size, board, potentialMember) === color,
-      pos,
+    size,
+    (potentialMember) => getField(size, board, potentialMember) === color,
+    pos,
   );
 
   // get the adject empty neighbors as multiple arrays
   const groupEmptyPositionsArrays = group.map((member) => getNeighPosArray(
-      member,
-      (potentialEmpty) => getField(size, board, potentialEmpty) === 0,
+    member,
+    (potentialEmpty) => getField(size, board, potentialEmpty) === 0,
   ));
 
   // flatten result & remove duplicates
@@ -254,10 +254,10 @@ function groupEmptyPositions(size: ISize,
 // TODO why not use RawGame as arg?
 // TODO ko detection not working (or missing?)
 export function testPosition(size: ISize,
-                             board: TGameBoard,
-                             koPosition: TKo,
-                             toMove: EColor,
-                             intededPos: IPosition): boolean {
+  board: TGameBoard,
+  koPosition: TKo,
+  toMove: EColor,
+  intededPos: IPosition): boolean {
 
   // first canonize
   const pos = canonPos(size, intededPos);
@@ -281,14 +281,14 @@ export function testPosition(size: ISize,
 
   // some filters
   const friendFilter = (potentialFriend: IPosition) => getField(
-      size,
-      board,
-      potentialFriend,
+    size,
+    board,
+    potentialFriend,
   ) === toMove;
   const enemyFilter = (potentialEnemy: IPosition) => getField(
-      size,
-      board,
-      potentialEnemy,
+    size,
+    board,
+    potentialEnemy,
   ) === flipColor(toMove);
 
   // capturing enemy stones?
@@ -296,10 +296,10 @@ export function testPosition(size: ISize,
   const enemyNeigh = getNeighPosArray(pos, enemyFilter);
   if (enemyNeigh.length > 0) {
     const enemyNeighsFreedoms = enemyNeigh.map((n) => groupEmptyPositions(
-        size,
-        board,
-        flipColor(toMove),
-        n,
+      size,
+      board,
+      flipColor(toMove),
+      n,
     ));
 
     if (enemyNeighsFreedoms.some((freedoms) => freedoms.length === 1)) {
@@ -314,10 +314,10 @@ export function testPosition(size: ISize,
   const friendNeigh = getNeighPosArray(pos, friendFilter);
   if (friendNeigh.length > 0) {
     const friendNeighsFreedoms = friendNeigh.map((n) => groupEmptyPositions(
-        size,
-        board,
-        toMove,
-        n,
+      size,
+      board,
+      toMove,
+      n,
     ));
 
     if (friendNeighsFreedoms.some((freedoms) => freedoms.length > 1)) {
@@ -330,8 +330,8 @@ export function testPosition(size: ISize,
   }
 
   const directEmpty = getNeighPosArray(
-      pos,
-      (potentialEmpty) => getField(size, board, potentialEmpty) === 0,
+    pos,
+    (potentialEmpty) => getField(size, board, potentialEmpty) === 0,
   );
 
   if (directEmpty.length > 0) {
@@ -345,11 +345,11 @@ export function testPosition(size: ISize,
 
 export function testMove(state: IRawGame, move: TMove): boolean {
   return isPass(move) || testPosition(
-      state.ruleSet.size,
-      state.board,
-      state.koPosition,
-      state.toMove,
-      move,
+    state.ruleSet.size,
+    state.board,
+    state.koPosition,
+    state.toMove,
+    move,
   );
 }
 
@@ -379,15 +379,15 @@ export function execMove(state: IRawGame, move: TMove): IRawGame {
 
   // filters
   const friendFilter = (potentialEnemy: IPosition) => getField(
-      size,
-      board,
-      potentialEnemy,
+    size,
+    board,
+    potentialEnemy,
   ) === toMove;
 
   const enemyFilter = (potentialEnemy: IPosition) => getField(
-      size,
-      board,
-      potentialEnemy,
+    size,
+    board,
+    potentialEnemy,
   ) === flipField(toMove);
 
   // capturing enemy stones?
@@ -395,17 +395,17 @@ export function execMove(state: IRawGame, move: TMove): IRawGame {
 
   // i.e. a neighboring enemy group has 1 liberty: pos
   const enemyNeighsWith1Lib = enemyNeigh.filter((n) => groupEmptyPositions(
-      size,
-      board,
-      flipField(toMove),
-      n,
+    size,
+    board,
+    flipField(toMove),
+    n,
   ).length === 1);
 
   // get the connected groups
   const enemyGroupsWith1Lib = enemyNeighsWith1Lib.map((n) => getGroupWithFilter(
-      size,
-      enemyFilter,
-      n,
+    size,
+    enemyFilter,
+    n,
   ));
 
   // check for possible ko
@@ -426,8 +426,8 @@ export function execMove(state: IRawGame, move: TMove): IRawGame {
 
   // now we don't care about the structure of the captured stones anymore
   const enemiesToBeCaptured = canonAndRemoveDups(
-      size,
-      ([] as any[]).concat.apply([], enemyGroupsWith1Lib),
+    size,
+    ([] as any[]).concat.apply([], enemyGroupsWith1Lib),
   );
 
   let newBoard = board;

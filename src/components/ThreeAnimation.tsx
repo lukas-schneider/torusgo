@@ -360,7 +360,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
   private initStats() {
     this.stats = new Stats();
-    this.stats.dom.style.cssText = 'position:absolute;right:0;cursor:pointer;opacity:0.9;z-index:10000;';
+    this.stats.dom.style.cssText = 'position:absolute;left:0;cursor:pointer;opacity:0.9;z-index:10000;';
     this.canvas.parentElement!.insertBefore(this.stats.dom, this.canvas);
 
     this.stats.showPanel(0);
