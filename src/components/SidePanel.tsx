@@ -1,8 +1,19 @@
-import * as React                                                         from 'react';
-import {createStyles, Divider, Paper, Typography, WithStyles, withStyles} from '@material-ui/core';
-import {IPlayer}                                                          from '../types/utils';
-import PlayerCard                                                         from './PlayerCard';
-import {EGamePhase, IRuleSet}                                             from '../types/game';
+import * as React from 'react';
+import {
+  Button,
+  createStyles,
+  Divider,
+  Paper,
+  Typography,
+  WithStyles,
+  withStyles,
+}                 from '@material-ui/core';
+import {IPlayer}  from '../types/utils';
+import PlayerCard from './PlayerCard';
+import {
+  EGamePhase,
+  IRuleSet,
+}                 from '../types/game';
 
 const styles = () => createStyles({
   root: {
@@ -26,6 +37,7 @@ interface IProps extends WithStyles<typeof styles> {
   ruleSet: IRuleSet,
   gamePhase: EGamePhase,
   moveNumber: number,
+  onOpenConfig: () => void,
 }
 
 function statusString(phase: EGamePhase): string {
@@ -45,23 +57,27 @@ function statusString(phase: EGamePhase): string {
 }
 
 const SidePanel: React.FC<IProps> = (props) => {
-  const {classes, black, white, ruleSet, gamePhase, moveNumber} = props;
+  const {classes, black, white, ruleSet, gamePhase, moveNumber, onOpenConfig} = props;
 
   return (
     <Paper square={true} className={classes.root}>
       <PlayerCard player={black} color={'black'}/>
       <Divider component={'hr'}/>
       <Typography variant={'body2'} align={'center'} className={classes.center}>
+        <i>{statusString(gamePhase)}</i><br/>
         move {moveNumber + 1}
         &nbsp;&bull;&nbsp;{ruleSet.size.x}&times;{ruleSet.size.y}
         &nbsp;&bull;&nbsp;{ruleSet.komi} komi
-        &nbsp;&bull;&nbsp;{ruleSet.handicap || 'no'} handicap<br/>
-        <i>
-          {statusString(gamePhase)}
-        </i>
+        &nbsp;&bull;&nbsp;{ruleSet.handicap || 'no'} handicap
       </Typography>
       <Divider component={'hr'}/>
       <PlayerCard player={white} color={'white'}/>
+      <Button fullWidth
+              color={'primary'}
+              type={'button'}
+              onClick={onOpenConfig}>
+        Restart Game
+      </Button>
     </Paper>
   );
 };

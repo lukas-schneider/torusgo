@@ -1,51 +1,73 @@
-import React, {Component}                      from 'react';
-import {EColor, EGamePhase, IRawGame}          from '../types/game';
-import {execMove, initGame, regMove, testMove} from '../utils/gameLogic';
-import ThreeAnimation                          from './ThreeAnimation';
-import TitlePanel                              from './SidePanel';
+import React, {Component}                       from 'react';
+import {EColor, EGamePhase, IRawGame, IRuleSet} from '../types/game';
+import {execMove, initGame, regMove, testMove}  from '../utils/gameLogic';
+import ThreeAnimation                           from './ThreeAnimation';
+import SidePanel                                from './SidePanel';
+import ConfigDialog                             from './ConfigDialog';
+import {boundMethod}                            from 'autobind-decorator';
 
 interface IState {
-  game: IRawGame,
+  game?: IRawGame,
   gamePhase: EGamePhase,
   moveNumber: number,
   white: string,
   black: string,
+  configOpen: boolean,
 }
 
 class LocalGame extends Component<{}, IState> {
   constructor(props: any) {
     super(props);
     this.state = {
-      game: initGame({handicap: 2, komi: 5.5, size: {x: 19, y: 19}}),
-      gamePhase: EGamePhase.Running,
+      gamePhase: EGamePhase.Waiting,
       moveNumber: 0,
-      white: 'Lukas',
-      black: 'Lars',
+      white: '',
+      black: '',
+      configOpen: true,
     };
   }
 
+  @boundMethod
+  setConfig(ruleSet: IRuleSet, white: string, black: string) {
+    this.setState({
+      game: initGame(ruleSet),
+      gamePhase: EGamePhase.Running,
+      white,
+      black,
+      configOpen: false,
+    });
+  }
+
   render() {
-    const {game, white, black, gamePhase, moveNumber} = this.state;
+    const {game, white, black, gamePhase, moveNumber, configOpen} = this.state;
     return (
       <div>
-        <TitlePanel ruleSet={game.ruleSet}
-                    gamePhase={gamePhase}
-                    moveNumber={moveNumber}
-                    local
-                    white={{
-                      name: white,
-                      captured: game.capturedByWhite,
-                      isMoving: game.toMove === EColor.White,
-                      isClient: true,
-                      isConnected: true,
-                    }}
-                    black={{
-                      name: black,
-                      captured: game.capturedByBlack,
-                      isMoving: game.toMove === EColor.Black,
-                      isClient: true,
-                      isConnected: true,
-                    }}/>
+        <ConfigDialog open={configOpen}
+                      allowCancel={game !== undefined}
+                      onCancel={() => this.setState({configOpen: false})}
+                      onClose={this.setConfig}/>
+        {game &&
+        <SidePanel ruleSet={game.ruleSet}
+                   gamePhase={gamePhase}
+                   moveNumber={moveNumber}
+                   local
+                   white={{
+                     name: white,
+                     captured: game.capturedByWhite,
+                     isMoving: game.toMove === EColor.White,
+                     isClient: true,
+                     isConnected: true,
+                   }}
+                   black={{
+                     name: black,
+                     captured: game.capturedByBlack,
+                     isMoving: game.toMove === EColor.Black,
+                     isClient: true,
+                     isConnected: true,
+                   }}
+                   onOpenConfig={() => this.setState({configOpen: true})}/>
+        }
+        {game &&
         <ThreeAnimation boardSizeX={game.ruleSet.size.x}
                         boardSizeY={game.ruleSet.size.y}
                         boardState={game.board}
@@ -59,6 +81,7 @@ class LocalGame extends Component<{}, IState> {
                         stoneSize={0.05}>
 
         </ThreeAnimation>
+        }
       </div>
     );
   }
