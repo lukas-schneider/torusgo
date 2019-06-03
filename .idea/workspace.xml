@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4e00318b-d740-49df-9393-fff83b222508" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/components/ConfigDialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ConfigDialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ConfigDialog.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/LocalGame.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/LocalGame.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/SidePanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/SidePanel.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ThreeAnimation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ThreeAnimation.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -22,8 +22,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components/LocalGame.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="15" column="1" lean-forward="true" selection-start-line="15" selection-start-column="1" selection-end-line="15" selection-end-column="1" />
+            <state relative-caret-position="842">
+              <caret line="80" column="40" selection-start-line="80" selection-start-column="40" selection-end-line="80" selection-end-column="40" />
               <folding>
                 <element signature="e#0#61#0" expanded="true" />
               </folding>
@@ -31,15 +31,15 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/components/ThreeAnimation.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1587">
-              <caret line="59" column="35" selection-start-line="59" selection-start-column="35" selection-end-line="59" selection-end-column="35" />
+            <state relative-caret-position="193">
+              <caret line="196" column="44" selection-start-line="196" selection-start-column="44" selection-end-line="196" selection-end-column="44" />
               <folding>
                 <element signature="e#0#71#0" expanded="true" />
+                <element signature="e#405#477#0" expanded="true" />
                 <element signature="n#!!block;n#componentWillUnmount#0;n#ThreeAnimation#0" />
-                <element signature="n#!!block;n#updateHover#0;n#ThreeAnimation#0" />
                 <element signature="n#!!block;n#initTwist#0;n#ThreeAnimation#0" />
                 <element signature="n#!!block;n#initMouse#0;n#ThreeAnimation#0" />
                 <element signature="n#!!block;n#initCamera#0;n#ThreeAnimation#0" />
@@ -49,8 +49,6 @@
                 <element signature="n#!!block;n#cleanUpStones#0;n#ThreeAnimation#0" />
                 <element signature="n#!!block;n#updateViewport#0;n#ThreeAnimation#0" />
                 <element signature="n#!!block;n#setupStoneArrays#0;n#ThreeAnimation#0" />
-                <element signature="n#!!block;n#updateBoardTransform#0;n#ThreeAnimation#0" />
-                <element signature="n#!!block;n#updateStoneTransforms#0;n#ThreeAnimation#0" />
                 <element signature="n#!!block;n#updateRayCastingMatrices#0;n#ThreeAnimation#0" />
                 <element signature="n#!!block;n#updateUniforms#0;n#ThreeAnimation#0" />
               </folding>
@@ -58,11 +56,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components/ConfigDialog.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="438">
-              <caret line="110" column="26" lean-forward="true" selection-start-line="110" selection-start-column="26" selection-end-line="110" selection-end-column="26" />
+            <state relative-caret-position="538">
+              <caret line="52" column="8" lean-forward="true" selection-start-line="52" selection-start-column="8" selection-end-line="52" selection-end-column="8" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -73,10 +71,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components/SidePanel.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="628">
-              <caret line="75" column="20" lean-forward="true" selection-start-line="75" selection-start-column="20" selection-end-line="75" selection-end-column="20" />
+            <state relative-caret-position="405">
+              <caret line="75" column="26" lean-forward="true" selection-start-line="75" selection-start-column="26" selection-end-line="75" selection-end-column="26" />
               <folding>
-                <element signature="e#0#87#0" expanded="true" />
+                <element signature="e#0#31#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -120,6 +118,7 @@
       <find>listener</find>
       <find>render</find>
       <find>\s</find>
+      <find>tab</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -140,7 +139,6 @@
         <option value="$PROJECT_DIR$/src/types/utils.ts" />
         <option value="$PROJECT_DIR$/src/components/TitlePanel.tsx" />
         <option value="$PROJECT_DIR$/src/components/PlayerCard.tsx" />
-        <option value="$PROJECT_DIR$/src/components/ThreeAnimation.tsx" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.txt" />
         <option value="$PROJECT_DIR$/src/__tests__/gameLogic.ts" />
         <option value="$PROJECT_DIR$/src/components/LandingPage.tsx" />
@@ -153,9 +151,10 @@
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.json" />
         <option value="$PROJECT_DIR$/src/types/game.ts" />
         <option value="$PROJECT_DIR$/src/components/ConfigModal.tsx" />
+        <option value="$PROJECT_DIR$/src/components/ConfigDialog.tsx" />
         <option value="$PROJECT_DIR$/src/components/LocalGame.tsx" />
         <option value="$PROJECT_DIR$/src/components/SidePanel.tsx" />
-        <option value="$PROJECT_DIR$/src/components/ConfigDialog.tsx" />
+        <option value="$PROJECT_DIR$/src/components/ThreeAnimation.tsx" />
       </list>
     </option>
   </component>
@@ -353,7 +352,7 @@
       <updated>1559408356811</updated>
       <workItem from="1559408358128" duration="5934000" />
       <workItem from="1559465784106" duration="25226000" />
-      <workItem from="1559568559232" duration="21170000" />
+      <workItem from="1559568559232" duration="22410000" />
     </task>
     <task id="LOCAL-00001" summary="working torus with actions &amp; controls">
       <created>1559491487746</created>
@@ -376,7 +375,14 @@
       <option name="project" value="LOCAL" />
       <updated>1559584424277</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="added config dialog on page load to set names, board size and rules">
+      <created>1559591796879</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1559591796879</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -400,13 +406,13 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="52330000" />
+    <option name="totallyTimeSpent" value="53570000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1920" y="27" width="1920" height="1053" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1935654" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1935654" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="npm" order="2" side_tool="true" />
       <window_info id="Favorites" order="3" side_tool="true" />
@@ -418,7 +424,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="8" weight="0.36951753" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="8" visible="true" weight="0.36951753" />
       <window_info anchor="bottom" id="TypeScript" order="9" weight="0.32894737" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.29276314" />
@@ -476,7 +482,8 @@
     <MESSAGE value="working torus with actions &amp; controls" />
     <MESSAGE value="added information panel, some reformatting" />
     <MESSAGE value="added game phase and move number to panel" />
-    <option name="LAST_COMMIT_MESSAGE" value="added game phase and move number to panel" />
+    <MESSAGE value="added config dialog on page load to set names, board size and rules" />
+    <option name="LAST_COMMIT_MESSAGE" value="added config dialog on page load to set names, board size and rules" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
@@ -753,16 +760,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/PlayerCard.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="7" lean-forward="true" selection-start-column="7" selection-end-column="7" />
-          <folding>
-            <element signature="e#0#71#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/@material-ui/core/TextField/TextField.d.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="296">
@@ -777,14 +774,54 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/ThreeAnimation.tsx">
+    <entry file="file://$PROJECT_DIR$/src/components/PlayerCard.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1587">
-          <caret line="59" column="35" selection-start-line="59" selection-start-column="35" selection-end-line="59" selection-end-column="35" />
+        <state>
+          <caret column="7" lean-forward="true" selection-start-column="7" selection-end-column="7" />
           <folding>
             <element signature="e#0#71#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/LocalGame.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="842">
+          <caret line="80" column="40" selection-start-line="80" selection-start-column="40" selection-end-line="80" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#61#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/ConfigDialog.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="538">
+          <caret line="52" column="8" lean-forward="true" selection-start-line="52" selection-start-column="8" selection-end-line="52" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/SidePanel.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="75" column="26" lean-forward="true" selection-start-line="75" selection-start-column="26" selection-end-line="75" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/ThreeAnimation.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="193">
+          <caret line="196" column="44" selection-start-line="196" selection-start-column="44" selection-end-line="196" selection-end-column="44" />
+          <folding>
+            <element signature="e#0#71#0" expanded="true" />
+            <element signature="e#405#477#0" expanded="true" />
             <element signature="n#!!block;n#componentWillUnmount#0;n#ThreeAnimation#0" />
-            <element signature="n#!!block;n#updateHover#0;n#ThreeAnimation#0" />
             <element signature="n#!!block;n#initTwist#0;n#ThreeAnimation#0" />
             <element signature="n#!!block;n#initMouse#0;n#ThreeAnimation#0" />
             <element signature="n#!!block;n#initCamera#0;n#ThreeAnimation#0" />
@@ -794,40 +831,8 @@
             <element signature="n#!!block;n#cleanUpStones#0;n#ThreeAnimation#0" />
             <element signature="n#!!block;n#updateViewport#0;n#ThreeAnimation#0" />
             <element signature="n#!!block;n#setupStoneArrays#0;n#ThreeAnimation#0" />
-            <element signature="n#!!block;n#updateBoardTransform#0;n#ThreeAnimation#0" />
-            <element signature="n#!!block;n#updateStoneTransforms#0;n#ThreeAnimation#0" />
             <element signature="n#!!block;n#updateRayCastingMatrices#0;n#ThreeAnimation#0" />
             <element signature="n#!!block;n#updateUniforms#0;n#ThreeAnimation#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/SidePanel.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="628">
-          <caret line="75" column="20" lean-forward="true" selection-start-line="75" selection-start-column="20" selection-end-line="75" selection-end-column="20" />
-          <folding>
-            <element signature="e#0#87#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/LocalGame.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="15" column="1" lean-forward="true" selection-start-line="15" selection-start-column="1" selection-end-line="15" selection-end-column="1" />
-          <folding>
-            <element signature="e#0#61#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/ConfigDialog.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="438">
-          <caret line="110" column="26" lean-forward="true" selection-start-line="110" selection-start-column="26" selection-end-line="110" selection-end-column="26" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
           </folding>
         </state>
       </provider>

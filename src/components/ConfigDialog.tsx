@@ -56,10 +56,6 @@ class ConfigDialog extends Component<IProps, IState> {
     };
   }
 
-  componentDidMount(): void {
-
-  }
-
   render() {
     const {white, black, ruleSet} = this.state;
     const {classes, onClose, onCancel, open, allowCancel} = this.props;

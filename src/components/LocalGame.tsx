@@ -78,9 +78,7 @@ class LocalGame extends Component<{}, IState> {
                         })}
                         radius={1}
                         thickness={game.ruleSet.size.x / game.ruleSet.size.y / 2}
-                        stoneSize={0.05}>
-
-        </ThreeAnimation>
+                        stoneSize={0.05}/>
         }
       </div>
     );

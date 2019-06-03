@@ -62,14 +62,14 @@ export interface IProps {
 
 const styles = () => {
   return createStyles({
-                        root: {
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                        },
-                      });
+    root: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+  });
 };
 
 // colors are const
@@ -153,37 +153,33 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
     this.animate();
 
-    // for raycasting:
+    window.addEventListener('resize', this.updateViewport);
 
     this.canvas.addEventListener('mousemove', this.updateMousePos);
     this.canvas.addEventListener('click', this.dispatchHover);
-    window.addEventListener('resize', this.updateViewport);
-    window.addEventListener('keydown', (event: KeyboardEvent) => {
+    this.canvas.addEventListener('keydown', (event: KeyboardEvent) => {
       if (contains(EKeys, event.code)) {
         this.updateKeyState(event.code as EKeys, true);
       }
     });
 
-    window.addEventListener('keyup', (event: KeyboardEvent) => {
+    this.canvas.addEventListener('keyup', (event: KeyboardEvent) => {
       if (contains(EKeys, event.code)) {
         this.updateKeyState(event.code as EKeys, false);
       }
     });
 
-    (document as any).printit = () => {
-      console.log(this);
-    };
   }
 
   public componentDidUpdate(prevProps: IProps) {
     if (this.props.boardSizeX !== prevProps.boardSizeX
-        || this.props.boardSizeY !== prevProps.boardSizeY) {
+      || this.props.boardSizeY !== prevProps.boardSizeY) {
       this.cleanUpStones();
       this.setupStoneArrays();
     }
 
     if (this.props.radius !== prevProps.radius
-        || this.props.thickness !== prevProps.thickness) {
+      || this.props.thickness !== prevProps.thickness) {
       this.cleanUpBoard();
       this.updateBoardTransform();
     }
@@ -198,7 +194,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
   public render() {
     const {classes} = this.props;
-    return <canvas className={classes.root} tabIndex={1} width={'100%'} height={'100%'}
+    return <canvas className={classes.root} tabIndex={0} width={'100%'} height={'100%'}
                    ref={(canvas) => this.canvas = canvas!}/>;
   }
 
@@ -209,7 +205,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     const offsetY = event.clientY - Y_OFFSET;
 
     if (offsetX > 0 && offsetX < this.canvas.width
-        && offsetY > 0 && offsetY < this.canvas.height) {
+      && offsetY > 0 && offsetY < this.canvas.height) {
       this.mousePos.x = 2.0 * (offsetX) / this.canvas.width - 1.0;
       this.mousePos.y = -2.0 * (offsetY) / this.canvas.height + 1.0;
     }
@@ -226,16 +222,16 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
   private updateHover() {
     const [cameraPosOC, rayDirectionOC] = RayCast(
-        this.mousePos,
-        this.camera.position,
-        this.inverseProjectionMatrix,
-        this.inverseViewMatrix,
-        this.inverseModelMatrixBoard,
+      this.mousePos,
+      this.camera.position,
+      this.inverseProjectionMatrix,
+      this.inverseViewMatrix,
+      this.inverseModelMatrixBoard,
     );
     const distance = RayCastTorus(
-        cameraPosOC,
-        rayDirectionOC,
-        new Vector2(this.props.radius, this.props.thickness),
+      cameraPosOC,
+      rayDirectionOC,
+      new Vector2(this.props.radius, this.props.thickness),
     );
 
     // check if torus is hit
@@ -294,13 +290,13 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     this.keyState[keyCode] = pressed;
 
     this.cameraDeltaX = sign(this.keyState[EKeys.Up], this.keyState[EKeys.Down])
-        * CAMERA_DELTA;
+      * CAMERA_DELTA;
 
     this.cameraDeltaY = sign(this.keyState[EKeys.Right], this.keyState[EKeys.Left])
-        * CAMERA_DELTA;
+      * CAMERA_DELTA;
 
     this.twistDelta = sign(this.keyState[EKeys.TwistIn], this.keyState[EKeys.TwistOut])
-        * TWIST_DELTA;
+      * TWIST_DELTA;
   }
 
 
@@ -350,7 +346,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
   private initCamera() {
     this.camera = new PerspectiveCamera(
-        45, 1, 0.1, 100,
+      45, 1, 0.1, 100,
     );
     this.camera.up.set(0, 1, 0);
     this.camera.position.set(0, 0, this.props.radius * 4.0);
@@ -424,9 +420,9 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
   private updateBoardTransform() {
     this.boardGeometry = new BoxGeometry(
-        2.0 * (this.props.radius + this.props.thickness),
-        2.0 * (this.props.radius + this.props.thickness),
-        2.0 * this.props.thickness,
+      2.0 * (this.props.radius + this.props.thickness),
+      2.0 * (this.props.radius + this.props.thickness),
+      2.0 * this.props.thickness,
     );
     this.boardMaterial = new TorusMaterialBoard();
     this.boardMesh = new Mesh(this.boardGeometry, this.boardMaterial);
@@ -435,7 +431,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
   private updateStoneTransforms() {
     const scaleX = (this.props.thickness + this.props.stoneSize)
-        * Math.PI / this.props.boardSizeX * 0.9; // the 0.9 enables a small gap
+      * Math.PI / this.props.boardSizeX * 0.9; // the 0.9 enables a small gap
     let scaleY; // to be determined for each iRad
     const scaleZ = this.props.stoneSize;
 
@@ -445,13 +441,13 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     for (let i = 0; i < this.props.boardSizeX; i++) {
       const iRad = i / this.props.boardSizeX * 2 * Math.PI + this.twist;
       const offset = new Vector3(
-          (this.props.thickness + scaleZ) * Math.sin(iRad),
-          0,
-          (this.props.thickness + scaleZ) * Math.cos(iRad),
+        (this.props.thickness + scaleZ) * Math.sin(iRad),
+        0,
+        (this.props.thickness + scaleZ) * Math.cos(iRad),
       );
 
       const innerRingRadius = this.props.radius
-          + (this.props.thickness + scaleZ) * Math.cos(iRad - Math.PI / 2.0);
+        + (this.props.thickness + scaleZ) * Math.cos(iRad - Math.PI / 2.0);
       scaleY = innerRingRadius * Math.PI / this.props.boardSizeY * 0.9; // the 0.9 enables a small gap
 
       for (let j = 0; j < this.props.boardSizeY; j++) {
@@ -461,8 +457,8 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
         const mesh = this.stoneMeshArray[stoneId];
 
         mesh.setRotationFromMatrix(
-            new Matrix4().makeRotationZ(jRad)
-                .multiply(new Matrix4().makeRotationY(iRad)));
+          new Matrix4().makeRotationZ(jRad)
+            .multiply(new Matrix4().makeRotationY(iRad)));
 
         mesh.scale.set(scaleX, scaleY, scaleZ);
         mesh.position.copy(offset);
@@ -602,7 +598,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
   private updateCameraTrackballKeyboard() {
     const cameraAxisY = new Vector3().crossVectors(this.camera.up, this.camera.position)
-        .normalize();
+      .normalize();
 
     this.camera.position.addScaledVector(this.camera.up, this.cameraDeltaX);
     this.camera.position.addScaledVector(cameraAxisY, this.cameraDeltaY);
