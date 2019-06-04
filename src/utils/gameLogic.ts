@@ -55,6 +55,8 @@ function canonPos(size: ISize, pos: IPosition): IPosition {
   let y = pos.y;
 
   // TODO jesus christ, you know that modulo is a thing, right?
+
+  //(x % size.x)+ size.x % size.x
   while (x < 0) {
     x += size.x;
   }
@@ -108,7 +110,8 @@ function setField(size: ISize, board: TGameBoard, field: TField, pos: IPosition)
 // can be passed a filter
 // to only find positions that have a certain field value
 // or to make sure that no loops happen in depth searches
-function getNeighPosArray(pos: IPosition,
+function getNeighPosArray(size: ISize,
+  pos: IPosition,
   posFilter = (potentialNeigh: IPosition) => true): IPosition[] {
   return [
     {
@@ -127,7 +130,7 @@ function getNeighPosArray(pos: IPosition,
       x: pos.x,
       y: pos.y + 1,
     },
-  ].filter(posFilter);
+  ].map((pos) => canonPos(size, pos)).filter(posFilter);
 }
 
 export function flipField(field: TField): TField {
@@ -211,6 +214,7 @@ function getGroupWithFilterRecursive(size: ISize,
 
   // get the wanted unvisited neighbors of all newMembers
   const newMembersSameFieldNeighArrays = newMembers.map((newMember: IPosition): IPosition[] => getNeighPosArray(
+    size,
     newMember,
     neighFilter,
   ));
@@ -240,6 +244,7 @@ function groupEmptyPositions(size: ISize,
 
   // get the adject empty neighbors as multiple arrays
   const groupEmptyPositionsArrays = group.map((member) => getNeighPosArray(
+    size,
     member,
     (potentialEmpty) => getField(size, board, potentialEmpty) === 0,
   ));
@@ -293,7 +298,7 @@ export function testPosition(size: ISize,
 
   // capturing enemy stones?
   // i.e. a neighboring enemy group has 1 liberty: pos
-  const enemyNeigh = getNeighPosArray(pos, enemyFilter);
+  const enemyNeigh = getNeighPosArray(size, pos, enemyFilter);
   if (enemyNeigh.length > 0) {
     const enemyNeighsFreedoms = enemyNeigh.map((n) => groupEmptyPositions(
       size,
@@ -311,7 +316,7 @@ export function testPosition(size: ISize,
   // if no enemy stones are captured, we must take care to not suicide other friendly stones
   // so at least one neighboring group needs to have at least 2 liberties
   // or there are no friendly stones at all
-  const friendNeigh = getNeighPosArray(pos, friendFilter);
+  const friendNeigh = getNeighPosArray(size, pos, friendFilter);
   if (friendNeigh.length > 0) {
     const friendNeighsFreedoms = friendNeigh.map((n) => groupEmptyPositions(
       size,
@@ -330,6 +335,7 @@ export function testPosition(size: ISize,
   }
 
   const directEmpty = getNeighPosArray(
+    size,
     pos,
     (potentialEmpty) => getField(size, board, potentialEmpty) === 0,
   );
@@ -353,7 +359,7 @@ export function testMove(state: IRawGame, move: TMove): boolean {
   );
 }
 
-export function execMove(state: IRawGame, move: TMove): IRawGame {
+export function execMove(state: IRawGame, move: TMove): IRawGame q{
   const {ruleSet, board, koPosition, toMove, numPasses} = state;
   const size = ruleSet.size;
 
@@ -365,6 +371,8 @@ export function execMove(state: IRawGame, move: TMove): IRawGame {
       koPosition: null,
     };
   }
+
+  console.log(move.x, move.y);
 
   const intendedPos = {
     x: move.x,
@@ -391,7 +399,7 @@ export function execMove(state: IRawGame, move: TMove): IRawGame {
   ) === flipField(toMove);
 
   // capturing enemy stones?
-  const enemyNeigh = getNeighPosArray(move, enemyFilter);
+  const enemyNeigh = getNeighPosArray(size, move, enemyFilter);
 
   // i.e. a neighboring enemy group has 1 liberty: pos
   const enemyNeighsWith1Lib = enemyNeigh.filter((n) => groupEmptyPositions(
@@ -424,6 +432,7 @@ export function execMove(state: IRawGame, move: TMove): IRawGame {
     }
   }
 
+  console.log(newKoPosition);
   // now we don't care about the structure of the captured stones anymore
   const enemiesToBeCaptured = canonAndRemoveDups(
     size,
