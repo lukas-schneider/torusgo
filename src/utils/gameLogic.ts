@@ -359,7 +359,7 @@ export function testMove(state: IRawGame, move: TMove): boolean {
   );
 }
 
-export function execMove(state: IRawGame, move: TMove): IRawGame q{
+export function execMove(state: IRawGame, move: TMove): IRawGame {
   const {ruleSet, board, koPosition, toMove, numPasses} = state;
   const size = ruleSet.size;
 

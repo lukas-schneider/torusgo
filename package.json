@@ -43,6 +43,7 @@
     "@types/react-dom": "16.8.4",
     "@types/react-router-dom": "^4.3.3",
     "@types/socket.io-client": "^1.4.32",
-    "@types/stats.js": "^0.17.0"
+    "@types/stats.js": "^0.17.0",
+    "http-proxy-middleware": "^0.19.1"
   }
 }

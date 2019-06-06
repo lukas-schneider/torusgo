@@ -5,6 +5,7 @@ import ThreeAnimation                           from './ThreeAnimation';
 import SidePanel                                from './SidePanel';
 import ConfigDialog                             from './ConfigDialog';
 import {boundMethod}                            from 'autobind-decorator';
+import {RouteComponentProps}                    from 'react-router';
 
 interface IState {
   game?: IRawGame,
@@ -15,7 +16,7 @@ interface IState {
   configOpen: boolean,
 }
 
-class LocalGame extends Component<{}, IState> {
+export default class LocalGame extends Component<RouteComponentProps, IState> {
   constructor(props: any) {
     super(props);
     this.state = {
@@ -84,5 +85,3 @@ class LocalGame extends Component<{}, IState> {
     );
   }
 }
-
-export default LocalGame;
