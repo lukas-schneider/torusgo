@@ -1,4 +1,5 @@
 import {createStyles, WithStyles, withStyles} from '@material-ui/core';
+import {boundMethod}                          from 'autobind-decorator';
 import * as React                             from 'react';
 import Stats                                  from 'stats.js';
 import {
@@ -12,65 +13,12 @@ import {
   Vector3,
   WebGLRenderer,
 }                                             from 'three';
-// to replace react autobind
-import {boundMethod}                          from 'autobind-decorator';
-
-import RayCast            from '../ThreeGraphic/RayCast';
-import RayCastTorus       from '../ThreeGraphic/RayCastTorus';
-import TorusMaterialBoard from '../ThreeGraphic/TorusMaterialBoard';
-import TorusMaterialStone from '../ThreeGraphic/TorusMaterialStone';
-import {contains, sign}   from '../types/utils';
-import {TGameBoard}       from '../types/game';
-
-const X_OFFSET = 0;
-const Y_OFFSET = 0;
-
-const CAMERA_DELTA = 0.3;
-const TWIST_DELTA = 0.05;
-
-enum EKeys {
-  Up           = 'KeyW',
-  Down         = 'KeyS',
-  Left         = 'KeyA',
-  Right        = 'KeyD',
-  TwistIn      = 'KeyQ',
-  TwistOut     = 'KeyE',
-  MouseControl = 'ControlLeft',
-}
-
-type TKeyState = {
-  [key in EKeys]: boolean;
-};
-
-export interface IProps {
-  // number of fields
-  boardSizeX: number,
-  boardSizeY: number,
-
-  // 0: empty, 1: white, 2: black
-  boardState: TGameBoard,
-
-  // torus and stone dimensions
-  radius: number,
-  thickness: number,
-  stoneSize: number,
-
-  testMove(x: number, y: number): boolean,
-
-  execMove(x: number, y: number): void,
-}
-
-const styles = () => {
-  return createStyles({
-    root: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    },
-  });
-};
+import RayCast                                from '../ThreeGraphic/RayCast';
+import RayCastTorus                           from '../ThreeGraphic/RayCastTorus';
+import TorusMaterialBoard                     from '../ThreeGraphic/TorusMaterialBoard';
+import TorusMaterialStone                     from '../ThreeGraphic/TorusMaterialStone';
+import {EColor, IRawGame}                     from '../types/game';
+import {contains, EKeys, sign, TKeyState}     from '../types/utils';
 
 // colors are const
 const colorClear = new Color(0x4286f4);
@@ -90,6 +38,22 @@ const red = new Color(0xFF0000);
 
 const box222 = new BoxGeometry(2, 2, 2);
 
+interface IProps {
+  rawGame: IRawGame,
+  onHover?: (x?: number, y?: number) => void,
+  onClick?: (x: number, y: number) => void,
+}
+
+const styles = createStyles({
+  root: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+});
+
 class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>> {
   private canvas: HTMLCanvasElement;
   private renderer: WebGLRenderer;
@@ -105,7 +69,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
   private stoneMaterialArray: TorusMaterialStone[];
   private stoneMeshArray: Mesh[];
 
-  private mousePos: Vector2; // current mouse pos in canvas, domain: [[-1,-1],[1,1]]
+  private mouse: Vector2; // current mouse pos in canvas, domain: [[-1,-1],[1,1]]
 
   // these are needed for CPU and GPU sided raytracing.
   private inverseViewMatrix: Matrix4;
@@ -113,14 +77,11 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
   private inverseModelMatrixBoard: Matrix4;
 
   // result of the CPU sided raytracing, i.e. field that is mouseovered
-  private focusedField: number;
-  private focusedFieldX: number;
-  private focusedFieldY: number;
+  private focusedField?: Vector2;
 
   private stats: Stats;
 
   private keyState: TKeyState = {
-    ControlLeft: false,
     KeyA: false,
     KeyD: false,
     KeyE: false,
@@ -129,159 +90,101 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     KeyW: false,
   };
 
-  private cameraDeltaX: number = 0;
-  private cameraDeltaY: number = 0;
+  private cameraDelta: Vector2;
   private twistDelta: number = 0;
 
+  private radius: number = 1;
+  private thickness: number;
+  private stoneSize: number = 0.05;
+
+  private cameraSpeed: number = 0.3;
+  private twistSpeed: number = 0.05;
   // for party
   private partyMode = false;
 
+  // ---- lifecycle methods ----
+
   public componentDidMount() {
-    this.scene = new Scene();
+    this.init();
 
-    this.initRenderer();
-    this.initCamera();
-
-    this.updateViewport();
-
-    this.initTwist();
-    this.initMouse();
-    this.setupStoneArrays();
-    this.updateBoardTransform();
-
-    this.initStats();
-
-    this.animate();
-
-    window.addEventListener('resize', this.updateViewport);
-
-    this.canvas.addEventListener('mousemove', this.updateMousePos);
-    this.canvas.addEventListener('click', this.dispatchHover);
-    this.canvas.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (contains(EKeys, event.code)) {
-        this.updateKeyState(event.code as EKeys, true);
-      }
-    });
-
-    this.canvas.addEventListener('keyup', (event: KeyboardEvent) => {
-      if (contains(EKeys, event.code)) {
-        this.updateKeyState(event.code as EKeys, false);
-      }
-    });
-
+    window.addEventListener('resize', this.handleResize);
+    this.canvas.addEventListener('mousemove', this.handleMouseMove);
+    this.canvas.addEventListener('click', this.handleMouseClick);
+    this.canvas.addEventListener('keydown', this.handleKeyDown);
+    this.canvas.addEventListener('keyup', this.handleKeyUp);
   }
 
   public componentDidUpdate(prevProps: IProps) {
-    if (this.props.boardSizeX !== prevProps.boardSizeX
-      || this.props.boardSizeY !== prevProps.boardSizeY) {
+    if (this.props.rawGame.ruleSet.size.x !== prevProps.rawGame.ruleSet.size.x
+      || this.props.rawGame.ruleSet.size.y !== prevProps.rawGame.ruleSet.size.y) {
       this.cleanUpStones();
-      this.setupStoneArrays();
-    }
 
-    if (this.props.radius !== prevProps.radius
-      || this.props.thickness !== prevProps.thickness) {
-      this.cleanUpBoard();
-      this.updateBoardTransform();
+      this.initThickness();
+      this.initStones();
     }
   }
 
   public componentWillUnmount() {
     this.cleanUp();
-    this.canvas.removeEventListener('mousemove', this.updateMousePos);
-    this.canvas.removeEventListener('mousedown', this.dispatchHover);
-    window.removeEventListener('resize', this.updateViewport);
+
+    window.removeEventListener('resize', this.handleResize);
+
+    this.canvas.removeEventListener('mousemove', this.handleMouseMove);
+    this.canvas.removeEventListener('click', this.handleMouseClick);
+    this.canvas.removeEventListener('keydown', this.handleKeyDown);
+    this.canvas.removeEventListener('keyup', this.handleKeyUp);
   }
 
   public render() {
     const {classes} = this.props;
-    return <canvas className={classes.root} tabIndex={0} width={'100%'} height={'100%'}
+    return <canvas className={classes.root}
+                   tabIndex={0}
+                   width={'100%'}
+                   height={'100%'}
                    ref={(canvas) => this.canvas = canvas!}/>;
   }
 
-  // Ray casting on CPU side, for detecting focused field
+
+  // ---- event handlers ----
+
   @boundMethod
-  private updateMousePos(event: MouseEvent) {
-    const offsetX = event.clientX - X_OFFSET;
-    const offsetY = event.clientY - Y_OFFSET;
+  private handleResize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h);
+  }
+
+  @boundMethod
+  private handleMouseMove(event: MouseEvent) {
+    const offsetX = event.clientX;
+    const offsetY = event.clientY;
 
     if (offsetX > 0 && offsetX < this.canvas.width
       && offsetY > 0 && offsetY < this.canvas.height) {
-      this.mousePos.x = 2.0 * (offsetX) / this.canvas.width - 1.0;
-      this.mousePos.y = -2.0 * (offsetY) / this.canvas.height + 1.0;
+      this.mouse.x = 2.0 * (offsetX) / this.canvas.width - 1.0;
+      this.mouse.y = -2.0 * (offsetY) / this.canvas.height + 1.0;
     }
   }
 
   @boundMethod
-  private dispatchHover() {
-    if (this.focusedField === -1) return;
+  private handleMouseClick() {
+    this.triggerClick();
+  }
 
-    if (this.props.testMove(this.focusedFieldX, this.focusedFieldY)) {
-      this.props.execMove(this.focusedFieldX, this.focusedFieldY);
+  @boundMethod
+  private handleKeyDown(event: KeyboardEvent) {
+    if (contains(EKeys, event.code)) {
+      this.updateKeyState(event.code as EKeys, true);
     }
   }
 
-  private updateHover() {
-    const [cameraPosOC, rayDirectionOC] = RayCast(
-      this.mousePos,
-      this.camera.position,
-      this.inverseProjectionMatrix,
-      this.inverseViewMatrix,
-      this.inverseModelMatrixBoard,
-    );
-    const distance = RayCastTorus(
-      cameraPosOC,
-      rayDirectionOC,
-      new Vector2(this.props.radius, this.props.thickness),
-    );
-
-    // check if torus is hit
-    if (distance < 0) {
-      this.focusedField = -1;
-      return;
+  @boundMethod
+  private handleKeyUp(event: KeyboardEvent) {
+    if (contains(EKeys, event.code)) {
+      this.updateKeyState(event.code as EKeys, false);
     }
-
-    // now compute which field is hit with trigonometry... yeah!
-    const hitPosOC = cameraPosOC.addScaledVector(rayDirectionOC, distance);
-
-    let theta = Math.atan2(hitPosOC.y, hitPosOC.x);
-    if (theta < 0) {
-      theta += 2.0 * Math.PI;
-    }
-
-    // we have to roatate back
-    const rotationMat = new Matrix4().makeRotationZ(-theta);
-    hitPosOC.applyMatrix4(rotationMat);
-    hitPosOC.x -= this.props.radius;
-
-    // noinspection JSSuspiciousNameCombination
-    let phi = Math.atan2(hitPosOC.x, hitPosOC.z);
-    if (phi < 0) {
-      phi += 2.0 * Math.PI;
-    }
-
-    // sub twist and renormalize
-    phi -= this.twist;
-    while (phi < 0) {
-      phi += 2.0 * Math.PI;
-    }
-    while (phi > 2.0 * Math.PI) {
-      phi -= 2.0 * Math.PI;
-    }
-
-    // calculate the indices on a 2d-array
-    let i = Math.round(phi / (2.0 * Math.PI / this.props.boardSizeX));
-    let j = Math.round(theta / (2.0 * Math.PI / this.props.boardSizeY));
-
-    if (i === this.props.boardSizeX) {
-      i = 0;
-    }
-    if (j === this.props.boardSizeY) {
-      j = 0;
-    }
-
-    this.focusedField = j + i * this.props.boardSizeY;
-    this.focusedFieldX = i;
-    this.focusedFieldY = j;
   }
 
   private updateKeyState(keyCode: EKeys, pressed: boolean) {
@@ -289,37 +192,57 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
     this.keyState[keyCode] = pressed;
 
-    this.cameraDeltaX = sign(this.keyState[EKeys.Up], this.keyState[EKeys.Down])
-      * CAMERA_DELTA;
+    this.cameraDelta.set(
+      sign(this.keyState[EKeys.Up], this.keyState[EKeys.Down]),
+      sign(this.keyState[EKeys.Right], this.keyState[EKeys.Left]),
+    ).multiplyScalar(this.cameraSpeed);
 
-    this.cameraDeltaY = sign(this.keyState[EKeys.Right], this.keyState[EKeys.Left])
-      * CAMERA_DELTA;
-
-    this.twistDelta = sign(this.keyState[EKeys.TwistIn], this.keyState[EKeys.TwistOut])
-      * TWIST_DELTA;
+    this.twistDelta = sign(
+      this.keyState[EKeys.TwistIn],
+      this.keyState[EKeys.TwistOut],
+    ) * this.twistSpeed;
   }
 
+  // ---- event triggers ----
 
-  // Here all the animation related functions follow
+  private triggerHover() {
+    if (this.focusedField) {
+      this.props.onHover && this.props.onHover(this.focusedField.x, this.focusedField.y);
+    } else {
+      this.props.onHover && this.props.onHover();
+    }
+  }
 
-  @boundMethod
-  private animate() {
-    this.requestId = requestAnimationFrame(this.animate);
+  private triggerClick() {
+    if (!this.focusedField) return;
 
-    this.stats.begin();
+    this.props.onClick && this.props.onClick(this.focusedField.x, this.focusedField.y);
+  }
 
-    this.updateStoneTransforms();
-    this.updateTwistKeyboard();
-    this.updateCameraTrackballKeyboard();
+  // ---- init functions ----
 
-    this.updateRayCastingMatrices();
+  private init() {
+    this.scene = new Scene();
 
-    this.updateHover();
-    this.updateUniforms();
+    this.initThickness();
 
-    this.renderer.render(this.scene, this.camera);
+    this.initRenderer();
+    this.initCamera();
 
-    this.stats.end();
+    this.handleResize();
+
+    this.initTwist();
+    this.initMouse();
+    this.initStones();
+    this.initBoard();
+
+    this.initStats();
+
+    this.animate();
+  }
+
+  private initThickness() {
+    this.thickness = this.props.rawGame.ruleSet.size.x / this.props.rawGame.ruleSet.size.y / 2;
   }
 
   private initRenderer() {
@@ -341,7 +264,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
   }
 
   private initMouse() {
-    this.mousePos = new Vector2();
+    this.mouse = new Vector2();
   }
 
   private initCamera() {
@@ -349,9 +272,36 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
       45, 1, 0.1, 100,
     );
     this.camera.up.set(0, 1, 0);
-    this.camera.position.set(0, 0, this.props.radius * 4.0);
+    this.camera.position.set(0, 0, this.radius * 4.0);
     this.camera.lookAt(0, 0, 0);
     this.scene.add(this.camera);
+
+    this.cameraDelta = new Vector2();
+  }
+
+  private initStones() {
+    this.stoneMaterialArray = [];
+    this.stoneMeshArray = [];
+    for (let i = 0; i < this.props.rawGame.ruleSet.size.x; i++) {
+      for (let j = 0; j < this.props.rawGame.ruleSet.size.y; j++) {
+        const material = new TorusMaterialStone();
+        const mesh = new Mesh(box222, material);
+        this.stoneMaterialArray.push(material);
+        this.stoneMeshArray.push(mesh);
+        this.scene.add(mesh);
+      }
+    }
+  }
+
+  private initBoard() {
+    this.boardGeometry = new BoxGeometry(
+      2.0 * (this.radius + this.thickness),
+      2.0 * (this.radius + this.thickness),
+      2.0 * this.thickness,
+    );
+    this.boardMaterial = new TorusMaterialBoard();
+    this.boardMesh = new Mesh(this.boardGeometry, this.boardMaterial);
+    this.scene.add(this.boardMesh);
   }
 
   private initStats() {
@@ -362,96 +312,59 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     this.stats.showPanel(0);
   }
 
-  private cleanUp() {
-    this.renderer.dispose();
-    this.cleanUpStones();
-    box222.dispose(); // this one kinda special
-    this.cleanUpBoard();
-
-    this.cleanUpStats();
-
-    cancelAnimationFrame(this.requestId);
-  }
-
-  private cleanUpBoard() {
-    this.scene.remove(this.boardMesh);
-    this.boardGeometry.dispose();
-    this.boardMaterial.dispose();
-  }
-
-  private cleanUpStats() {
-    this.stats.dom.remove();
-  }
-
-  private cleanUpStones() {
-    for (const mesh of this.stoneMeshArray) {
-      this.scene.remove(mesh);
-    }
-    for (const material of this.stoneMaterialArray) {
-      material.dispose();
-    }
-    this.stoneMeshArray = [];
-    this.stoneMaterialArray = [];
-  }
+  // ---- animation functions ----
 
   @boundMethod
-  private updateViewport() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    this.camera.aspect = w / h;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(w, h);
+  private animate() {
+    this.requestId = requestAnimationFrame(this.animate);
 
-  }
+    this.stats.begin();
 
-  private setupStoneArrays() {
-    this.stoneMaterialArray = [];
-    this.stoneMeshArray = [];
-    for (let i = 0; i < this.props.boardSizeX; i++) {
-      for (let j = 0; j < this.props.boardSizeY; j++) {
-        const material = new TorusMaterialStone();
-        const mesh = new Mesh(box222, material);
-        this.stoneMaterialArray.push(material);
-        this.stoneMeshArray.push(mesh);
-        this.scene.add(mesh);
-      }
+    this.updateStoneTransforms();
+    this.updateTwistKeyboard();
+    this.updateCameraTrackballKeyboard();
+
+    this.updateRayCastingMatrices();
+
+    const previousFocusField = this.focusedField;
+
+    this.updateHover();
+    if (this.focusedField !== previousFocusField) {
+      this.triggerHover();
     }
-  }
 
-  private updateBoardTransform() {
-    this.boardGeometry = new BoxGeometry(
-      2.0 * (this.props.radius + this.props.thickness),
-      2.0 * (this.props.radius + this.props.thickness),
-      2.0 * this.props.thickness,
-    );
-    this.boardMaterial = new TorusMaterialBoard();
-    this.boardMesh = new Mesh(this.boardGeometry, this.boardMaterial);
-    this.scene.add(this.boardMesh);
+    this.updateUniforms();
+
+    this.renderer.render(this.scene, this.camera);
+
+    this.stats.end();
   }
 
   private updateStoneTransforms() {
-    const scaleX = (this.props.thickness + this.props.stoneSize)
-      * Math.PI / this.props.boardSizeX * 0.9; // the 0.9 enables a small gap
+    const x = this.props.rawGame.ruleSet.size.x;
+    const y = this.props.rawGame.ruleSet.size.y;
+
+    const scaleX = (this.thickness + this.stoneSize)
+      * Math.PI / x * 0.9; // the 0.9 enables a small gap
     let scaleY; // to be determined for each iRad
-    const scaleZ = this.props.stoneSize;
+    const scaleZ = this.stoneSize;
 
     let stoneId = 0;
     const xAxis = new Vector3(1, 0, 0);
     const zAxis = new Vector3(0, 0, 1);
-    for (let i = 0; i < this.props.boardSizeX; i++) {
-      const iRad = i / this.props.boardSizeX * 2 * Math.PI + this.twist;
+    for (let i = 0; i < x; i++) {
+      const iRad = i / x * 2 * Math.PI + this.twist;
       const offset = new Vector3(
-        (this.props.thickness + scaleZ) * Math.sin(iRad),
+        (this.thickness + scaleZ) * Math.sin(iRad),
         0,
-        (this.props.thickness + scaleZ) * Math.cos(iRad),
+        (this.thickness + scaleZ) * Math.cos(iRad),
       );
 
-      const innerRingRadius = this.props.radius
-        + (this.props.thickness + scaleZ) * Math.cos(iRad - Math.PI / 2.0);
-      scaleY = innerRingRadius * Math.PI / this.props.boardSizeY * 0.9; // the 0.9 enables a small gap
+      const innerRingRadius = this.radius + (this.thickness + scaleZ) * Math.cos(iRad - Math.PI / 2.0);
+      scaleY = innerRingRadius * Math.PI / y * 0.9; // the 0.9 enables a small gap
 
-      for (let j = 0; j < this.props.boardSizeY; j++) {
-        const jRad = j / this.props.boardSizeY * 2 * Math.PI;
+      for (let j = 0; j < y; j++) {
+        const jRad = j / y * 2 * Math.PI;
 
 
         const mesh = this.stoneMeshArray[stoneId];
@@ -462,12 +375,37 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
         mesh.scale.set(scaleX, scaleY, scaleZ);
         mesh.position.copy(offset);
-        mesh.position.addScaledVector(xAxis, this.props.radius);
+        mesh.position.addScaledVector(xAxis, this.radius);
         mesh.position.applyAxisAngle(zAxis, jRad);
 
         stoneId++;
       }
     }
+  }
+
+  private updateTwistKeyboard() {
+    this.twist += this.twistDelta;
+    while (this.twist < 0) {
+      this.twist += 2.0 * Math.PI;
+    }
+    while (this.twist > 2.0 * Math.PI) {
+      this.twist -= 2.0 * Math.PI;
+    }
+  }
+
+  private updateCameraTrackballKeyboard() {
+    const cameraAxisY = new Vector3().crossVectors(this.camera.up, this.camera.position)
+      .normalize();
+
+    this.camera.position.addScaledVector(this.camera.up, this.cameraDelta.x);
+    this.camera.position.addScaledVector(cameraAxisY, this.cameraDelta.y);
+    this.camera.position.normalize();
+
+    cameraAxisY.crossVectors(this.camera.up, this.camera.position);
+    this.camera.up.crossVectors(this.camera.position, cameraAxisY);
+
+    this.camera.position.multiplyScalar(this.radius * 4);
+    this.camera.lookAt(new Vector3(0, 0, 0));
   }
 
   private updateRayCastingMatrices() {
@@ -476,7 +414,72 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     this.inverseModelMatrixBoard = new Matrix4().getInverse(this.boardMesh.matrixWorld);
   }
 
+  private updateHover() {
+    const [cameraPosOC, rayDirectionOC] = RayCast(
+      this.mouse,
+      this.camera.position,
+      this.inverseProjectionMatrix,
+      this.inverseViewMatrix,
+      this.inverseModelMatrixBoard,
+    );
+
+    const distance = RayCastTorus(
+      cameraPosOC,
+      rayDirectionOC,
+      new Vector2(this.radius, this.thickness),
+    );
+
+    // check if torus is hit
+    if (distance < 0) {
+      this.focusedField = undefined;
+      return;
+    }
+
+    // now compute which field is hit with trigonometry... yeah!
+    const hitPosOC = cameraPosOC.addScaledVector(rayDirectionOC, distance);
+
+    let theta = Math.atan2(hitPosOC.y, hitPosOC.x);
+    if (theta < 0) {
+      theta += 2.0 * Math.PI;
+    }
+
+    // we have to roatate back
+    const rotationMat = new Matrix4().makeRotationZ(-theta);
+    hitPosOC.applyMatrix4(rotationMat);
+    hitPosOC.x -= this.radius;
+
+    // noinspection JSSuspiciousNameCombination
+    let phi = Math.atan2(hitPosOC.x, hitPosOC.z);
+    if (phi < 0) {
+      phi += 2.0 * Math.PI;
+    }
+
+    // sub twist and renormalize
+    phi -= this.twist;
+    while (phi < 0) {
+      phi += 2.0 * Math.PI;
+    }
+    while (phi > 2.0 * Math.PI) {
+      phi -= 2.0 * Math.PI;
+    }
+
+    // calculate the indices on a 2d-array
+    let i = Math.round(phi / (2.0 * Math.PI / this.props.rawGame.ruleSet.size.x));
+    let j = Math.round(theta / (2.0 * Math.PI / this.props.rawGame.ruleSet.size.y));
+
+    if (i === this.props.rawGame.ruleSet.size.x) {
+      i = 0;
+    }
+    if (j === this.props.rawGame.ruleSet.size.y) {
+      j = 0;
+    }
+
+    this.focusedField = new Vector2(i, j);
+  }
+
   private updateUniforms() {
+    const x = this.props.rawGame.ruleSet.size.x;
+    const y = this.props.rawGame.ruleSet.size.y;
 
     this.camera.updateMatrixWorld(true);
     this.camera.updateProjectionMatrix();
@@ -493,18 +496,18 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     this.boardMaterial.uniforms.inverseProjectionMatrix.value = this.inverseProjectionMatrix;
     this.boardMaterial.uniforms.inverseModelMatrix.value = this.inverseModelMatrixBoard;
     this.boardMaterial.uniforms.transposedInverseModelMatrix.value = transposedInverseModelMatrixBoard;
-    this.boardMaterial.uniforms.boardSizeX.value = this.props.boardSizeX;
-    this.boardMaterial.uniforms.boardSizeY.value = this.props.boardSizeY;
-    this.boardMaterial.uniforms.radius.value = this.props.radius;
-    this.boardMaterial.uniforms.thickness.value = this.props.thickness;
+    this.boardMaterial.uniforms.boardSizeX.value = x;
+    this.boardMaterial.uniforms.boardSizeY.value = y;
+    this.boardMaterial.uniforms.radius.value = this.radius;
+    this.boardMaterial.uniforms.thickness.value = this.thickness;
     this.boardMaterial.uniforms.twist.value = this.twist;
     this.boardMaterial.uniforms.torusColor.value = colorBoard;
 
     // now for all the stones
-    for (let i = 0; i < this.props.boardSizeX * this.props.boardSizeY; i++) {
+    for (let i = 0; i < x * y; i++) {
       const mesh = this.stoneMeshArray[i];
       const material = this.stoneMaterialArray[i];
-      const state = this.props.boardState[i];
+      const state = this.props.rawGame.board[i];
 
       mesh.updateMatrixWorld(true);
 
@@ -566,12 +569,12 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
             mesh.visible = false;
             break;
           }
-          case 1: {
+          case EColor.Black: {
             mesh.visible = true;
             material.uniforms.stoneColor.value = colorStoneBlack;
             break;
           }
-          case 2: {
+          case EColor.White: {
             mesh.visible = true;
             material.uniforms.stoneColor.value = colorStoneWhite;
             break;
@@ -579,36 +582,45 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
         }
       }
 
-      if (i === this.focusedField) {
+      if (this.focusedField && i === this.focusedField.y + y * this.focusedField.x) {
         mesh.visible = true;
         material.uniforms.stoneColor.value = colorStoneHover;
       }
     }
   }
 
-  private updateTwistKeyboard() {
-    this.twist += this.twistDelta;
-    while (this.twist < 0) {
-      this.twist += 2.0 * Math.PI;
-    }
-    while (this.twist > 2.0 * Math.PI) {
-      this.twist -= 2.0 * Math.PI;
-    }
+  // ---- clean up functions ----
+
+  private cleanUp() {
+    this.renderer.dispose();
+    this.cleanUpStones();
+    box222.dispose(); // this one kinda special
+    this.cleanUpBoard();
+
+    this.cleanUpStats();
+
+    cancelAnimationFrame(this.requestId);
   }
 
-  private updateCameraTrackballKeyboard() {
-    const cameraAxisY = new Vector3().crossVectors(this.camera.up, this.camera.position)
-      .normalize();
+  private cleanUpBoard() {
+    this.scene.remove(this.boardMesh);
+    this.boardGeometry.dispose();
+    this.boardMaterial.dispose();
+  }
 
-    this.camera.position.addScaledVector(this.camera.up, this.cameraDeltaX);
-    this.camera.position.addScaledVector(cameraAxisY, this.cameraDeltaY);
-    this.camera.position.normalize();
+  private cleanUpStats() {
+    this.stats.dom.remove();
+  }
 
-    cameraAxisY.crossVectors(this.camera.up, this.camera.position);
-    this.camera.up.crossVectors(this.camera.position, cameraAxisY);
-
-    this.camera.position.multiplyScalar(this.props.radius * 4);
-    this.camera.lookAt(new Vector3(0, 0, 0));
+  private cleanUpStones() {
+    for (const mesh of this.stoneMeshArray) {
+      this.scene.remove(mesh);
+    }
+    for (const material of this.stoneMaterialArray) {
+      material.dispose();
+    }
+    this.stoneMeshArray = [];
+    this.stoneMaterialArray = [];
   }
 }
 

@@ -1,23 +1,22 @@
-import * as SocketIO from 'socket.io';
-import Game          from './Game';
-import {boundMethod} from 'autobind-decorator';
-import {EColor}      from '../../src/types/game';
-import {contains}    from '../../src/types/utils';
-
-export interface IPlayer {
-  id: string,
-  name: string,
-  connected: boolean,
-}
+import {boundMethod}                            from 'autobind-decorator';
+import debug                                    from 'debug';
+import * as SocketIO                            from 'socket.io';
+import {EColor, IPlayerWithId, EGamePhase}      from '../../src/types/game';
+import {contains, EServerEvents, EClientEvents} from '../../src/types/utils';
+import Game                                     from './Game';
 
 type TRes = (response: any) => void;
 
+const debugSend = debug('torusgo:connection-send');
+const debugReceive = debug('torusgo:connection-recv');
+const debugStatus = debug('torusgo:connection-status');
+
 export default class Connection {
-  public player: IPlayer;
   public socket: SocketIO.Socket;
   public game: Game;
 
-  private color?: EColor;
+  public player: IPlayerWithId;
+  private role?: EColor;
 
   constructor(socket: SocketIO.Socket, game: Game) {
     this.socket = socket;
@@ -26,25 +25,32 @@ export default class Connection {
     const id = socket.handshake.query.id;
     const name = socket.handshake.query.name;
 
-    this.player = {id, name, connected: true};
+    this.player = {id, name, isConnected: true};
 
     if (typeof id !== 'string' || typeof name !== 'string') {
       this.socket.disconnect(true);
       return;
     }
 
+    debugStatus('new connection with id: %s, name: %s', id, name);
+
     this.game.connections.push(this);
 
-    console.log(socket.id + ' connected');
-
-    // check if this is was a player before
+    // check if this client was a player before
     [EColor.White, EColor.Black].forEach((color) => {
       if (this.game.players[color] && this.game.players[color]!.id === id) {
-        this.game.players[color] = this.player;
-        this.color = color;
-        this.game.emitPlayerUpdate();
+        debugStatus('assigning %s as %s player ', id, EColor[color]);
+        this.game.assignPlayer(color, this.player);
+        this.role = color;
       }
     });
+
+
+    for (let key in EClientEvents) {
+      this.socket.on(EClientEvents[key], (payload) => {
+        debugReceive('%s %O', EClientEvents[key], payload);
+      });
+    }
 
     this.socket.on('disconnect', this.onDisconnect);
     this.socket.on('move', this.onMove);
@@ -55,25 +61,25 @@ export default class Connection {
 
   @boundMethod
   public onDisconnect(reason: string) {
-    if (this.color) {
-      this.game.players[this.color]!.connected = false;
+    debugStatus('connection lost with %s', this.player.id);
+    if (this.role) {
+      this.game.players[this.role]!.isConnected = false;
       this.game.emitPlayerUpdate();
     }
     this.game.connections.splice(this.game.connections.indexOf(this), 1);
-    console.log(this.socket.id + ' disconnected with reason ' + reason);
   }
 
   @boundMethod
   public onMove(payload: any, res: TRes) {
-    if (!this.color) {
+    if (!this.role) {
       return res({error: 'state_error', payload, message: 'not a player'});
     }
 
-    if (this.game.state.toMove !== this.color) {
+    if (this.game.rawGame.toMove !== this.role) {
       return res({error: 'state_error', payload, message: 'player not to move'});
     }
 
-    if (!payload || !(payload.type === 'move' || payload.type === 'pass')) {
+    if (!payload || !(payload.type === 'Move' || payload.type === 'Pass')) {
       return res({error: 'payload_error', payload, message: 'invalid move type'});
     }
 
@@ -90,7 +96,11 @@ export default class Connection {
 
   @boundMethod
   public onJoin(payload: any, res: TRes) {
-    if (this.color) {
+    if (this.game.phase !== EGamePhase.Waiting) {
+      return res({error: 'state_error', payload, message: 'game has already started'});
+    }
+
+    if (this.role) {
       return res({error: 'state_error', payload, message: 'user is already a player'});
     }
 
@@ -102,17 +112,29 @@ export default class Connection {
       return res({error: 'state_error', payload, message: 'color already taken'});
     }
 
-    this.game.players[payload as EColor] = this.player;
-    this.game.emitPlayerUpdate();
+    this.game.assignPlayer(payload as EColor, this.player);
+
+    this.role = payload;
+    this.sendRoleUpdate();
 
     res(null);
   }
 
   public sendFullGame() {
-    this.socket.emit('update', {
-      game: this.game.state,
-      players: this.game.players,
-      moveNumber: this.game.moveNumber,
+    this.socket.emit(EServerEvents.FullUpdate, {
+      game: {
+        rawGame: this.game.rawGame,
+        phase: this.game.phase,
+        players: this.game.getPlayersWithoutId(),
+        moveNumber: this.game.moveNumber,
+      },
+      role: this.role,
+    });
+  }
+
+  public sendRoleUpdate() {
+    this.socket.emit(EServerEvents.RoleUpdate, {
+      role: this.role,
     });
   }
 }

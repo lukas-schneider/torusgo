@@ -12,7 +12,9 @@
     "react-autobind": "latest",
     "stats.js": "latest",
     "autobind-decorator": "latest",
-    "react-router-dom": "latest"
+    "react-router-dom": "latest",
+    "debug": "latest",
+    "@material-ui/icons": "latest"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -37,6 +39,7 @@
   },
   "devDependencies": {
     "@material-ui/core": "^4.0.1",
+    "@types/debug": "^4.1.4",
     "@types/jest": "24.0.13",
     "@types/node": "12.0.4",
     "@types/react": "16.8.19",

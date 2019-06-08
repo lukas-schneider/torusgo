@@ -64,10 +64,38 @@ export interface IRawGame {
   capturedByWhite: number,
 }
 
+
+// player state shared between server and client
+export interface IPlayer {
+  name: string,
+  isConnected: boolean,
+}
+
+// player state used by the client
+export interface IPlayerWithInfo extends IPlayer {
+  isClient: boolean,
+  isMoving: boolean,
+  captured: number,
+}
+
+// player state used by the server
+export interface IPlayerWithId extends IPlayer {
+  id: string,
+}
+
+export interface IColorMap<T> {
+  [EColor.Black]?: T,
+  [EColor.White]?: T,
+}
+
 export interface IGame {
-  meta?: IMeta,
+  rawGame: IRawGame,
   phase: EGamePhase,
   moveNumber: number,
-  moveHistory: TMove[],
-  rawGame: IRawGame,
+  players: IColorMap<IPlayer>,
+  //moveHistory: TMove[],
+}
+
+export interface IGameWithInfo extends IGame {
+  players: IColorMap<IPlayerWithInfo>,
 }

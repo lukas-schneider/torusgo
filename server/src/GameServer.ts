@@ -1,9 +1,9 @@
-import {IRuleSet}    from '../../src/types/game';
-import Game          from './Game';
-import {IMap}        from '../../src/types/utils';
-import {generate}    from 'shortid';
 import {Server}      from 'http';
+import {generate}    from 'shortid';
 import * as SocketIO from 'socket.io';
+import {IRuleSet}    from '../../src/types/game';
+import {IMap}        from '../../src/types/utils';
+import Game          from './Game';
 
 
 export default class GameServer {
@@ -15,7 +15,10 @@ export default class GameServer {
   private readonly server: SocketIO.Server;
 
   public constructor(httpServer: Server) {
-    this.server = SocketIO(httpServer, {path: '/ws'});
+    this.server = SocketIO(httpServer, {
+      path: '/ws',
+      pingInterval: 2500,
+    });
   }
 
   public createGame(ruleSet: IRuleSet) {
