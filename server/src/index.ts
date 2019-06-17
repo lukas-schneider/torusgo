@@ -1,6 +1,18 @@
-import HTTPServer from './HTTPServer';
-import GameServer from './GameServer';
+import * as express from 'express';
+import GameServer   from './GameServer';
 
-const httpServer = new HTTPServer(3450);
+const env = process.env;
+const prod = env.NODE_ENV === 'production';
 
-GameServer.instance = new GameServer(httpServer.server);
+const port = prod ? (env.PORT) : 3450;
+
+const app = express();
+
+const server = app.listen(port);
+
+GameServer.instance = new GameServer(server);
+
+if (prod) {
+  // TODO add serving of nodejs
+}
+

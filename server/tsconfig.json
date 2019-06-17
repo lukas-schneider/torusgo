@@ -17,6 +17,11 @@
     ],
     "typeRoots": [
       "./node_modules/@types"
+    ],
+    "plugins": [
+      {
+        "transform": "typescript-is/lib/transform-inline/transformer"
+      }
     ]
   },
   "include": [

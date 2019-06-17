@@ -3,5 +3,5 @@
     "src"
   ],
   "ext": "ts",
-  "exec": "ts-node src/index.ts dev"
+  "exec": "ts-node --compiler ttypescript src/index.ts dev"
 }

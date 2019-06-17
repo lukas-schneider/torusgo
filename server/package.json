@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "DEBUG=torusgo:* nodemon --config \"./nodemon.json\"/",
+    "build": "ttsc --build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Lukas Schneider",
@@ -12,22 +13,19 @@
   "devDependencies": {
     "@types/debug": "^4.1.4",
     "@types/express": "^4.16.1",
-    "@types/morgan": "^1.7.35",
     "@types/shortid": "0.0.29",
     "@types/socket.io": "^2.1.2",
     "nodemon": "^1.19.1",
     "ts-node": "^8.2.0",
+    "ttypescript": "^1.5.7",
     "typescript": "^3.5.1"
   },
   "dependencies": {
-    "@overnightjs/core": "^1.6.8",
-    "@overnightjs/logger": "^1.1.7",
     "autobind-decorator": "^2.4.0",
-    "body-parser": "^1.19.0",
     "debug": "^4.1.1",
     "express": "^4.17.1",
-    "morgan": "latest",
     "shortid": "^2.2.14",
-    "socket.io": "latest"
+    "socket.io": "latest",
+    "typescript-is": "^0.12.1"
   }
 }

@@ -1,22 +1,23 @@
 import debug                                                          from 'debug';
-import * as SocketIO                                                  from 'socket.io';
-import {EColor, EGamePhase, IPlayerWithId, IRawGame, IRuleSet, TMove} from '../../src/types/game';
-import {EServerEvents}                                                from '../../src/types/utils';
+import {EventEmitter}                                                 from 'events';
 import {
   execMove,
   initGame,
   testMove,
-}                                                                     from '../../src/utils/gameLogic';
-import Connection                                                     from './Connection';
+  IRawGame,
+  EColor,
+  IRuleSet,
+  TMove,
+}                                                                     from '../../shared/gameLogic';
+import {IGameState, IColorMap, EGamePhase, EServerEvent, IPlayerInfo} from '../../shared/types';
+import Session                                                        from './Session';
 
+const debugStatus = debug('torusgo:game');
 
-const debugStatus = debug('torusgo:game-status');
-const debugSend = debug('torusgo:game-send');
-const debugRecv = debug('torusgo:game');
+export default class Game extends EventEmitter {
+  static ROOM_PREFIX = 'game/';
 
-export default class Game {
-  private nsp: SocketIO.Namespace;
-  public connections: Connection[] = [];
+  public id: string;
 
   // ---- game state ----
   public rawGame: IRawGame;
@@ -25,71 +26,70 @@ export default class Game {
 
   public moveNumber: number = 0;
 
-  public players: {
-    [EColor.White]?: IPlayerWithId,
-    [EColor.Black]?: IPlayerWithId,
-  } = {};
+  public players: Partial<IColorMap<Session>> = {};
 
-
-  constructor(nsp: SocketIO.Namespace, ruleSet: IRuleSet) {
-    this.nsp = nsp;
-
-    debugStatus('listening on namespace %s ...', this.nsp.name);
-    this.nsp.on('connection', (socket) => new Connection(socket, this));
-
+  constructor(id: string, ruleSet: IRuleSet) {
+    super();
+    this.id = id;
     this.rawGame = initGame(ruleSet);
+    this.debug('created with ruleset %o', ruleSet);
+
+    this.on(EServerEvent.Move, (...args) => this.debug('executed move %o', args[0]));
+
+    this.on(EServerEvent.PhaseUpdate, () => this.debug('switched to phase %o', this.phase));
+
+    this.on(
+      EServerEvent.PlayerUpdate,
+      () => this.debug('updated players %o', this.getPlayerInfo()),
+    );
+  }
+
+  private debug(format: string, ...args: any[]) {
+    debugStatus('[%s]' + format, Game.ROOM_PREFIX + this.id, ...args);
+  }
+
+  public connect(session: Session, role: EColor) {
+    this.players[role] = session;
+
+    this.emit(EServerEvent.PlayerUpdate);
+  }
+
+  public disconnect(role: EColor) {
+    delete this.players[role];
+
+    this.emit(EServerEvent.PlayerUpdate);
+  }
+
+  public getState(): IGameState {
+    return {
+      rawGame: this.rawGame,
+      phase: this.phase,
+      moveNumber: this.moveNumber,
+      players: this.getPlayerInfo(),
+    };
+  }
+
+  public getPlayerInfo(): Partial<IColorMap<IPlayerInfo>> {
+    const white = this.players[EColor.White];
+    const black = this.players[EColor.Black];
+    return {
+      [EColor.White]: white && {
+        name: white.name,
+      },
+      [EColor.Black]: black && {
+        name: black.name,
+      },
+    };
   }
 
   public execMove(move: TMove): boolean {
-    if (testMove(this.rawGame, move)) {
-      this.rawGame = execMove(this.rawGame, move);
-      this.moveNumber++;
+    if (!testMove(this.rawGame, move)) return false;
 
-      this.emitMove(move);
-      return true;
-    }
-    return false;
-  }
+    this.rawGame = execMove(this.rawGame, move);
+    this.moveNumber++;
 
-  public assignPlayer(color: EColor, player: IPlayerWithId) {
-    this.players[color] = player;
-    this.emitPlayerUpdate();
-
-    if (this.players[EColor.Black] && this.players[EColor.White]) {
-      this.phase = EGamePhase.Running;
-      this.emitPhaseUpdate();
-    }
-
-  }
-
-  public emitPhaseUpdate() {
-    debugSend('%s %s', EServerEvents.PhaseUpdate, EGamePhase[this.phase]);
-    this.nsp.emit(EServerEvents.PhaseUpdate, this.phase);
-  }
-
-  public emitPlayerUpdate() {
-    const players = this.getPlayersWithoutId();
-
-    debugSend('%s %o', EServerEvents.PlayerUpdate, players);
-    this.nsp.emit(EServerEvents.PlayerUpdate, players);
-  }
-
-  public emitMove(move: TMove) {
-    debugSend('%s %o', EServerEvents.Move, move);
-    this.nsp.emit(EServerEvents.Move, move);
-  }
-
-  public getPlayersWithoutId() {
-    return {
-      [EColor.White]: this.players[EColor.White] && {
-        ...this.players[EColor.White],
-        id: undefined,
-      },
-      [EColor.Black]: this.players[EColor.Black] && {
-        ...this.players[EColor.Black],
-        id: undefined,
-      },
-    };
+    this.emit(EServerEvent.Move, move);
+    return true;
   }
 
 }

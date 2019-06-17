@@ -1,35 +1,42 @@
 import {Server}      from 'http';
 import {generate}    from 'shortid';
 import * as SocketIO from 'socket.io';
-import {IRuleSet}    from '../../src/types/game';
-import {IMap}        from '../../src/types/utils';
+import {IRuleSet}    from '../../shared/gameLogic';
 import Game          from './Game';
-
+import Session       from './Session';
+import {Collection}  from './utils';
 
 export default class GameServer {
   public static instance: GameServer;
 
-  private games: IMap<Game> = {};
-  private gameIds: string[] = [];
+  public readonly games: Collection<Game> = new Collection<Game>();
 
-  private readonly server: SocketIO.Server;
+  public readonly sessions: Collection<Session> = new Collection<Session>();
+
+  public readonly server: SocketIO.Server;
 
   public constructor(httpServer: Server) {
     this.server = SocketIO(httpServer, {
       path: '/ws',
       pingInterval: 2500,
     });
+
+    this.server.on('connection', (socket) => {
+      const session = new Session(socket, this);
+
+      this.sessions.add(session);
+      socket.on('disconnect', () => this.sessions.remove(session));
+    });
   }
 
   public createGame(ruleSet: IRuleSet) {
     let id = generate();
 
-    while (this.gameIds.indexOf(id) !== -1) {
+    while (this.games.has(id)) {
       id = generate();
     }
 
-    this.gameIds.push(id);
-    this.games[id] = new Game(this.server.of(id), ruleSet);
+    this.games.add(new Game(id, ruleSet));
 
     return id;
   }
