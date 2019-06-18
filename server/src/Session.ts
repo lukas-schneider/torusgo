@@ -3,7 +3,7 @@ import Debug                                                    from 'debug';
 import * as SocketIO                                            from 'socket.io';
 import {equals}                                                 from 'typescript-is';
 import {EColor, TMove, IRuleSet}                                from '../../src/shared/gameLogic';
-import {EClientEvent, EServerEvent}                             from '../../src/shared/types';
+import {EClientEvent, EServerEvent, EGamePhase}                 from '../../src/shared/types';
 import {checkName}                                              from '../../src/shared/utils';
 import {PayloadError, GameNotFoundError, StateError, MoveError} from './error';
 import Game                                                     from './Game';
@@ -35,6 +35,8 @@ export default class Session {
     this.socket.on(EClientEvent.Join, this.handleJoin);
     this.socket.on(EClientEvent.Leave, this.handleLeave);
     this.socket.on(EClientEvent.Move, this.handleMove);
+    this.socket.on(EClientEvent.Resign, this.handleResign);
+
     this.socket.on('disconnect', this.handleDisconnect);
   }
 
@@ -155,6 +157,22 @@ export default class Session {
     if (!this.game!.execMove(payload)) {
       throw new MoveError(payload);
     }
+
+    res(null);
+  }
+
+  @boundMethod
+  @messageHandler('resign')
+  private handleResign(payload: any, res: TRes) {
+    if (this.state !== ESessionState.Playing) {
+      res(new StateError('not playing'));
+    }
+
+    if (this.game!.phase !== EGamePhase.Running) {
+      res(new StateError('game not running'));
+    }
+
+    this.game!.resign(this.role!);
 
     res(null);
   }

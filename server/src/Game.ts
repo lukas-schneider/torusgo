@@ -31,7 +31,7 @@ export default class Game extends EventEmitter {
   // ---- game state ----
   public rawGame: IRawGame;
 
-  public phase: EGamePhase = EGamePhase.Waiting;
+  public phase: EGamePhase = EGamePhase.Running;
 
   public moveNumber: number = 0;
 
@@ -97,4 +97,17 @@ export default class Game extends EventEmitter {
     return true;
   }
 
+  public resign(role: EColor) {
+    switch (role) {
+      case EColor.Black:
+        this.phase = EGamePhase.WhiteVictory;
+        break;
+      case EColor.White:
+        this.phase = EGamePhase.BlackVictory;
+        break;
+    }
+
+    debug('[%s] finished with %s resignation', this.id, EColor[role]);
+    this.emit(EServerEvent.PhaseUpdate, {phase: this.phase});
+  }
 }

@@ -5,7 +5,7 @@ import {BrowserRouter as Router, Route} from 'react-router-dom';
 import './App.css';
 import LandingPage                      from './components/LandingPage';
 import LocalGame                        from './components/LocalGame';
-import ServerGame                       from './components/ServerGame';
+import OnlineGame                       from './components/OnlineGame';
 import globalTheme                      from './globalTheme';
 
 export default () => (
@@ -14,7 +14,7 @@ export default () => (
     <Router>
       <Route path={'/'} exact component={LandingPage}/>
       <Route path={'/local'} component={LocalGame}/>
-      <Route path={'/game/:id'} component={ServerGame}/>
+      <Route path={'/game/:id'} component={OnlineGame}/>
     </Router>
   </ThemeProvider>
 );

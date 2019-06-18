@@ -1,14 +1,14 @@
-import {Typography, LinearProgress} from '@material-ui/core';
-import {boundMethod}                from 'autobind-decorator';
-import React, {Component}           from 'react';
-import {RouteComponentProps}        from 'react-router';
+import {Typography, LinearProgress, Paper} from '@material-ui/core';
+import {boundMethod}                       from 'autobind-decorator';
+import React, {Component}                  from 'react';
+import {RouteComponentProps}               from 'react-router';
 import {
   execMove,
   regMove,
   testMove,
   EColor,
   TMove,
-}                                   from '../shared/gameLogic';
+}                                          from '../shared/gameLogic';
 import {
   IGameState,
   IColorMap,
@@ -16,13 +16,13 @@ import {
   IError,
   EGamePhase,
   EServerEvent,
-}                                   from '../shared/types';
-import GameClient                   from '../utils/GameClient';
-import withClient                   from '../utils/withClient';
-import MainLayout                   from './MainLayout';
-import ScoreBoard                   from './ScoreBoard';
-import SideLayout                   from './SideLayout';
-import ThreeAnimation               from './ThreeAnimation';
+}                                          from '../shared/types';
+import GameClient                          from '../utils/GameClient';
+import withClient                          from '../utils/withClient';
+import MainLayout                          from './MainLayout';
+import ScoreBoard                          from './ScoreBoard';
+import SideLayout                          from './SideLayout';
+import ThreeAnimation                      from './ThreeAnimation';
 
 interface IState {
   game?: IGameState,
@@ -30,7 +30,7 @@ interface IState {
   error?: IError,
 }
 
-class ServerGame extends Component<RouteComponentProps<{ id: string }>, IState> {
+class OnlineGame extends Component<RouteComponentProps<{ id: string }>, IState> {
   state: IState = {};
 
   public componentDidMount() {
@@ -75,16 +75,18 @@ class ServerGame extends Component<RouteComponentProps<{ id: string }>, IState> 
       if (error) {
         return (
           <MainLayout>
-            <Typography variant={'h5'}>
-              {error.name}
-            </Typography>
-            <hr/>
-            <Typography variant={'body1'}>
-              {error.message}<br/>
-              {error.payload &&
-              <code>{JSON.stringify(error.payload)}</code>
-              }
-            </Typography>
+            <Paper>
+              <Typography variant={'h5'}>
+                {error.name}
+              </Typography>
+              <hr/>
+              <Typography variant={'body1'}>
+                {error.message}<br/>
+                {error.payload &&
+                <code>{JSON.stringify(error.payload)}</code>
+                }
+              </Typography>
+            </Paper>
           </MainLayout>
         );
       } else {
@@ -176,4 +178,4 @@ class ServerGame extends Component<RouteComponentProps<{ id: string }>, IState> 
   }
 }
 
-export default withClient(GameClient.instance)(ServerGame);
+export default withClient(GameClient.instance)(OnlineGame);

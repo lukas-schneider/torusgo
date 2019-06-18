@@ -1,27 +1,31 @@
-import {createStyles, withStyles} from '@material-ui/core';
-import * as React                 from 'react';
-import {Link}                     from 'react-router-dom';
+import {createStyles, withStyles, Paper, Typography, Theme, Link} from '@material-ui/core';
+import * as React                                                 from 'react';
+import {Link as RouterLink}                                       from 'react-router-dom';
+import MainLayout                                                 from './MainLayout';
 
-const style = createStyles({
-  root: {
-    margin: 30,
+const style = (theme: Theme) => createStyles({
+  paper: {
+    padding: theme.spacing(3, 2),
   },
 });
 
 const LandingPage: React.FC = (props: any) => {
   const {classes} = props;
   return (
-    <div className={classes.root}>
-      <h2>torusgo-minimal</h2>
-      <p>
-        / should be a static landing page <br/>
-        <Link to={'/local'}>/local</Link> for local games (no server connection) <br/>
-        <Link to={'/game/asdf'}>/game/asdf</Link> for public server games. Anyone with the id can
-        join as black/white if a slot is free. <br/>
-        /createGame for public server games. Anyone with the id can join as black/white if a slot is
-        free. <br/>
-      </p>
-    </div>
+    <MainLayout>
+      <Paper className={classes.paper}>
+        <Typography variant={'h4'}>
+          Torus Go
+        </Typography>
+        <hr/>
+        <Typography variant={'body1'}>
+          Click <Link component={RouterLink} to={'/local'}>here</Link> to play a local game
+        </Typography>
+        <Typography variant={'body1'}>
+          Click <Link component={RouterLink} to={'/game/asdf'}>here</Link> to play an online game
+        </Typography>
+      </Paper>
+    </MainLayout>
   );
 };
 

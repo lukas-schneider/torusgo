@@ -1,7 +1,7 @@
-import {createStyles, WithStyles, withStyles} from '@material-ui/core';
-import {boundMethod}                          from 'autobind-decorator';
-import * as React                             from 'react';
-import Stats                                  from 'stats.js';
+import {createStyles, WithStyles, withStyles, withTheme, WithTheme} from '@material-ui/core';
+import {boundMethod}                                                from 'autobind-decorator';
+import * as React                                                   from 'react';
+import Stats                                                        from 'stats.js';
 import {
   BoxGeometry,
   Color,
@@ -12,21 +12,17 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
-}                                             from 'three';
-import {IRawGame, EColor}                     from '../shared/gameLogic';
-import {contains, sign}                       from '../shared/utils';
-import RayCast                                from '../ThreeGraphic/RayCast';
-import RayCastTorus                           from '../ThreeGraphic/RayCastTorus';
-import TorusMaterialBoard                     from '../ThreeGraphic/TorusMaterialBoard';
-import TorusMaterialStone                     from '../ThreeGraphic/TorusMaterialStone';
-import {TKeyState, EKeys}                     from '../utils/types';
-
-// colors are const
-const colorClear = new Color(0x4286f4);
-const colorBoard = new Color(0xFF6B00);
-const colorStoneWhite = new Color(0xe6ffff);
-const colorStoneBlack = new Color(0x1a0008);
-const colorStoneHover = new Color(0xFFD700);
+}                                                                   from 'three';
+import {IRawGame, EColor}                                           from '../shared/gameLogic';
+import {contains, sign}                                             from '../shared/utils';
+import RayCast                                                      from '../ThreeGraphic/RayCast';
+import RayCastTorus
+                                                                    from '../ThreeGraphic/RayCastTorus';
+import TorusMaterialBoard
+                                                                    from '../ThreeGraphic/TorusMaterialBoard';
+import TorusMaterialStone
+                                                                    from '../ThreeGraphic/TorusMaterialStone';
+import {TKeyState, EKeys}                                           from '../utils/types';
 
 // rainbow!
 const violet = new Color(0x9400D4);
@@ -39,7 +35,7 @@ const red = new Color(0xFF0000);
 
 const box222 = new BoxGeometry(2, 2, 2);
 
-interface IProps {
+interface IProps extends WithStyles<typeof styles>, WithTheme {
   rawGame: IRawGame,
   onHover?: (x?: number, y?: number) => void,
   onClick?: (x: number, y: number) => void,
@@ -55,7 +51,7 @@ const styles = createStyles({
   },
 });
 
-class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>> {
+class ThreeAnimation extends React.Component<IProps> {
   private canvas: HTMLCanvasElement;
   private renderer: WebGLRenderer;
   private scene: Scene;
@@ -103,9 +99,21 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
   // for party
   private partyMode = false;
 
+  private colorClear = new Color(0x4286f4);
+  private colorBoard = new Color(0xFF6B00);
+  private colorStoneWhite = new Color(0xe6ffff);
+  private colorStoneBlack = new Color(0x1a0008);
+  private colorStoneHover = new Color(0xFFD700);
+
   // ---- lifecycle methods ----
 
   public componentDidMount() {
+    const {theme} = this.props;
+    this.colorClear.setStyle(theme.palette.background.default);
+    this.colorBoard.setStyle(theme.palette.primary.main);
+    this.colorStoneBlack.setStyle(theme.palette.common.black);
+    this.colorStoneWhite.setStyle(theme.palette.common.white);
+
     this.init();
 
     window.addEventListener('resize', this.handleResize);
@@ -257,7 +265,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     if (-1 === supportedExtensions.indexOf('EXT_frag_depth')) {
       alert('EXT_frag_depth extension not supported! 3D view not available!');
     }
-    this.renderer.setClearColor(colorClear, 1);
+    this.renderer.setClearColor(this.colorClear, 1);
   }
 
   private initTwist() {
@@ -502,7 +510,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
     this.boardMaterial.uniforms.radius.value = this.radius;
     this.boardMaterial.uniforms.thickness.value = this.thickness;
     this.boardMaterial.uniforms.twist.value = this.twist;
-    this.boardMaterial.uniforms.torusColor.value = colorBoard;
+    this.boardMaterial.uniforms.torusColor.value = this.colorBoard;
 
     // now for all the stones
     for (let i = 0; i < x * y; i++) {
@@ -572,12 +580,12 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
           }
           case EColor.Black: {
             mesh.visible = true;
-            material.uniforms.stoneColor.value = colorStoneBlack;
+            material.uniforms.stoneColor.value = this.colorStoneBlack;
             break;
           }
           case EColor.White: {
             mesh.visible = true;
-            material.uniforms.stoneColor.value = colorStoneWhite;
+            material.uniforms.stoneColor.value = this.colorStoneWhite;
             break;
           }
         }
@@ -585,7 +593,7 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
 
       if (this.focusedField && i === this.focusedField.y + y * this.focusedField.x) {
         mesh.visible = true;
-        material.uniforms.stoneColor.value = colorStoneHover;
+        material.uniforms.stoneColor.value = this.colorStoneHover;
       }
     }
   }
@@ -625,4 +633,4 @@ class ThreeAnimation extends React.Component<IProps & WithStyles<typeof styles>>
   }
 }
 
-export default withStyles(styles)(ThreeAnimation);
+export default withTheme(withStyles(styles)(ThreeAnimation));
