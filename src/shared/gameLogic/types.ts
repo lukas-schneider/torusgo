@@ -1,3 +1,5 @@
+import {IColorMap} from '../types';
+
 export interface IRegMove {
   type: 'Move',
   x: number,
@@ -44,8 +46,7 @@ export interface IRawGame {
   board: TGameBoard,
   koPosition: TKo,
   numPasses: number,
-  capturedByBlack: number,
-  capturedByWhite: number,
+  captured: IColorMap<number>,
 }
 
 

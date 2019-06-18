@@ -1,6 +1,7 @@
 import {createStyles, Typography, withStyles, WithStyles, Button} from '@material-ui/core';
 import * as React                                                 from 'react';
-import {IPlayerWithInfo, EColor}                                  from '../types/game';
+import {EColor}                                                   from '../shared/gameLogic';
+import {IExtendedPlayerInfo}                                      from '../shared/types';
 
 function colorString(color: EColor) {
   switch (color) {
@@ -31,7 +32,7 @@ const styles = () => createStyles({
 });
 
 interface IProps extends WithStyles<typeof styles> {
-  player?: IPlayerWithInfo,
+  player?: IExtendedPlayerInfo,
   color: EColor,
   onJoin?: (color: EColor) => void,
 }

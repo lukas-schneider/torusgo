@@ -1,13 +1,16 @@
 import {boundMethod}                                            from 'autobind-decorator';
+import Debug                                                    from 'debug';
 import * as SocketIO                                            from 'socket.io';
 import {equals}                                                 from 'typescript-is';
-import {EColor, TMove, IRuleSet}                                from '../../shared/gameLogic';
-import {EClientEvent, EServerEvent}                             from '../../shared/types';
-import {checkName}                                              from '../../shared/utils';
+import {EColor, TMove, IRuleSet}                                from '../../src/shared/gameLogic';
+import {EClientEvent, EServerEvent}                             from '../../src/shared/types';
+import {checkName}                                              from '../../src/shared/utils';
 import {PayloadError, GameNotFoundError, StateError, MoveError} from './error';
 import Game                                                     from './Game';
 import GameServer                                               from './GameServer';
 import {TRes, messageHandler, ESessionState}                    from './utils';
+
+const debug = Debug('torusgo:session');
 
 export default class Session {
   public readonly id: string;
@@ -20,12 +23,12 @@ export default class Session {
   public role?: EColor;
 
   private socket: SocketIO.Socket;
-  private server: GameServer;
 
-  constructor(socket: SocketIO.Socket, server: GameServer) {
-    this.server = server;
+  constructor(socket: SocketIO.Socket) {
     this.socket = socket;
     this.id = socket.id;
+
+    debug('client %s connected', this.id);
 
     this.socket.on(EClientEvent.Create, this.handleCreate);
     this.socket.on(EClientEvent.Watch, this.handleWatch);
@@ -82,35 +85,35 @@ export default class Session {
   // ---- event handlers ----
 
   @boundMethod
-  @messageHandler
+  @messageHandler('create')
   private handleCreate(payload: any, res: TRes) {
     if (!equals<IRuleSet>(payload)) {
       throw new PayloadError(payload);
     }
 
     res({
-      id: this.server.createGame(payload),
+      id: GameServer.instance.createGame(payload),
     });
   }
 
   @boundMethod
-  @messageHandler
+  @messageHandler('watch')
   private handleWatch(payload: any, res: TRes) {
     if (!equals<{ gameId: string }>(payload)) {
       throw new PayloadError(payload);
     }
 
-    if (!this.server.games.has(payload.gameId)) {
+    if (!GameServer.instance.games.has(payload.gameId)) {
       throw new GameNotFoundError(payload);
     }
 
-    this.watch(this.server.games.get(payload.gameId));
+    this.watch(GameServer.instance.games.get(payload.gameId));
 
     res(this.game!.getState());
   }
 
   @boundMethod
-  @messageHandler
+  @messageHandler('join')
   private handleJoin(payload: any, res: TRes) {
     if (!equals<{ role: EColor }>(payload)) {
       throw new PayloadError(payload);
@@ -126,11 +129,11 @@ export default class Session {
 
     this.join(payload.role);
 
-    res(null);
+    res(payload);
   }
 
   @boundMethod
-  @messageHandler
+  @messageHandler('leave')
   private handleLeave(payload: any, res: TRes) {
     this.leave();
 
@@ -139,7 +142,7 @@ export default class Session {
 
 
   @boundMethod
-  @messageHandler
+  @messageHandler('move')
   private handleMove(payload: any, res: TRes) {
     if (!equals<TMove>(payload)) {
       throw new PayloadError(payload);
@@ -157,7 +160,7 @@ export default class Session {
   }
 
   @boundMethod
-  @messageHandler
+  @messageHandler('set_name')
   private handleSetName(payload: any, res: TRes) {
     if (!equals<{ name: string }>(payload)) {
       throw new PayloadError(payload);
@@ -179,8 +182,9 @@ export default class Session {
 
   @boundMethod
   private handleDisconnect() {
-    this.leave();
+    debug('client %s disconnected', this.id);
 
-    this.server.sessions.remove(this);
+    this.leave();
+    GameServer.instance.sessions.remove(this);
   }
 }

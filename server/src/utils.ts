@@ -1,10 +1,13 @@
-import {IMap} from '../../shared/utils';
+import Debug  from 'debug';
+import {IMap} from '../../src/shared/utils';
+
+const debug = Debug('torusgo:session');
 
 export type TRes = (payload: any) => void;
 
 // this is a 'method decorator'
 // see https://www.typescriptlang.org/docs/handbook/decorators.html
-export const messageHandler = (
+export const messageHandler = (name: string) => (
   target: Object,
   propertyName: string,
   propertyDescriptor: PropertyDescriptor,
@@ -12,12 +15,16 @@ export const messageHandler = (
   const method = propertyDescriptor.value;
 
   propertyDescriptor.value = function (payload: any, res: TRes, ...args: any[]) {
+    debug('%s %o', name, payload);
+
     let sent = false;
     try {
-      return method.apply(
+      return method.call(
         this,
         payload,
         (value: any) => {
+          debug('=> %s %o', name, value);
+
           sent = true;
           res(value);
         },
@@ -25,6 +32,8 @@ export const messageHandler = (
       );
     } catch (err) {
       if (!sent) {
+        debug('=> %s %o', name, err);
+
         res({error: err});
       }
     }

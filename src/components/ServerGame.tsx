@@ -1,107 +1,136 @@
-import {boundMethod}                              from 'autobind-decorator';
-import React, {Component}                         from 'react';
-import {RouteComponentProps}                      from 'react-router';
-import {EColor, IGame, TMove, IPlayer, IColorMap} from '../types/game';
-import {EStatus, EServerEvents}                   from '../types/utils';
-import GameConnection                             from '../utils/Connection';
-import {execMove, regMove, testMove}              from '../utils/gameLogic';
-import ScoreBoard                                 from './ScoreBoard';
-import SideLayout                                 from './SideLayout';
-import StatusPanel                                from './StatusPanel';
-import ThreeAnimation                             from './ThreeAnimation';
+import {Typography, LinearProgress} from '@material-ui/core';
+import {boundMethod}                from 'autobind-decorator';
+import React, {Component}           from 'react';
+import {RouteComponentProps}        from 'react-router';
+import {
+  execMove,
+  regMove,
+  testMove,
+  EColor,
+  TMove,
+}                                   from '../shared/gameLogic';
+import {
+  IGameState,
+  IColorMap,
+  IPlayerInfo,
+  IError,
+  EGamePhase,
+  EServerEvent,
+}                                   from '../shared/types';
+import GameClient                   from '../utils/GameClient';
+import withClient                   from '../utils/withClient';
+import MainLayout                   from './MainLayout';
+import ScoreBoard                   from './ScoreBoard';
+import SideLayout                   from './SideLayout';
+import ThreeAnimation               from './ThreeAnimation';
 
 interface IState {
-  status: EStatus,
-  latency: number,
-  game?: IGame,
+  game?: IGameState,
   role?: EColor,
+  error?: IError,
 }
 
-export default class ServerGame extends Component<RouteComponentProps<{ id: string }>, IState> {
-
-  private connection: GameConnection;
-
-  constructor(props: Readonly<RouteComponentProps<{ id: string }>>) {
-    super(props);
-    this.state = {
-      status: EStatus.Disconnected,
-      latency: 0,
-    };
-  }
+class ServerGame extends Component<RouteComponentProps<{ id: string }>, IState> {
+  state: IState = {};
 
   public componentDidMount() {
-    this.connect();
+    this.watch();
 
+    GameClient.instance.on(EServerEvent.Move, this.handleMove);
+    GameClient.instance.on(EServerEvent.PlayerUpdate, this.handlePlayerUpdate);
+    GameClient.instance.on(EServerEvent.PhaseUpdate, this.handlePhaseUpdate);
   }
 
   public componentWillUnmount() {
-    this.disconnect();
+    this.leave();
+
+    GameClient.instance.off(EServerEvent.Move, this.handleMove);
+    GameClient.instance.off(EServerEvent.PlayerUpdate, this.handlePlayerUpdate);
+    GameClient.instance.off(EServerEvent.PhaseUpdate, this.handlePhaseUpdate);
   }
 
   public componentDidUpdate(prevProps: Readonly<RouteComponentProps<{ id: string }>>) {
     if (prevProps.match.params.id !== this.props.match.params.id) {
-      this.disconnect();
-      this.connect();
+      this.leave();
+      this.watch();
     }
   }
 
   public render() {
-    const {status, game, role, latency} = this.state;
+    const {game, role, error} = this.state;
 
-    const gameWithInfo = game && {
-      ...game,
-      players: {
-        [EColor.White]: game.players[EColor.White] && {
-          ...game.players[EColor.White]!,
-          isClient: role === EColor.White,
-          isMoving: game.rawGame.toMove === EColor.White,
-          captured: game.rawGame.capturedByWhite,
-        },
-        [EColor.Black]: game.players[EColor.Black] && {
-          ...game.players[EColor.Black]!,
-          isClient: role === EColor.Black,
-          isMoving: game.rawGame.toMove === EColor.Black,
-          captured: game.rawGame.capturedByWhite,
-        },
-      },
-    };
+    if (game) {
+      return (
+        <>
+          <SideLayout>
+            <ScoreBoard game={game}
+                        role={role}
+                        onJoin={this.join}/>
+          </SideLayout>
+          <ThreeAnimation rawGame={game.rawGame}
+                          onClick={(x, y) => this.move(regMove(x, y))}/>
+        </>
+      );
+    } else {
+      if (error) {
+        return (
+          <MainLayout>
+            <Typography variant={'h5'}>
+              {error.name}
+            </Typography>
+            <hr/>
+            <Typography variant={'body1'}>
+              {error.message}<br/>
+              {error.payload &&
+              <code>{JSON.stringify(error.payload)}</code>
+              }
+            </Typography>
+          </MainLayout>
+        );
+      } else {
+        return (
+          <MainLayout>
+            <Typography variant={'h5'} align={'center'}>
+              Loading Game...
+            </Typography>
+            <LinearProgress/>
+          </MainLayout>
+        );
+      }
+    }
 
-    return (
-      <>
-        {gameWithInfo &&
-        <SideLayout>
-          <StatusPanel status={status}
-                       latency={latency}/>
-          <ScoreBoard game={gameWithInfo}
-                      onJoin={status === EStatus.Connected ? this.joinGame : undefined}/>
-        </SideLayout>
-        }
-        {game &&
-        <ThreeAnimation rawGame={game.rawGame}
-                        onClick={(x, y) => this.testAndSendMove(regMove(x, y))}/>
-        }
-      </>
-    );
+
   }
 
-  private connect() {
-    this.connection = new GameConnection(this.props.match.params.id);
-
-    this.connection.on('status', (status) => this.setState({status}));
-
-    this.connection.on('latency', (latency) => this.setState({latency}));
-
-    this.connection.on(EServerEvents.FullUpdate, this.onUpdate);
-    this.connection.on(EServerEvents.RoleUpdate, this.onUpdate);
-    this.connection.on(EServerEvents.PlayerUpdate, this.onPlayerUpdate);
-    this.connection.on(EServerEvents.Move, this.onMove);
+  private leave() {
+    GameClient.instance.leave();
+    this.setState({
+      error: undefined,
+      game: undefined,
+      role: undefined,
+    });
   }
 
-  private disconnect() {
-    this.connection.close();
+  private watch() {
+    GameClient.instance.watch(this.props.match.params.id)
+      .then((payload: any) => this.setState({
+        game: payload,
+      }))
+      .catch((error: any) => this.setState({
+        error: error,
+      }));
   }
 
-  private testAndSendMove(move: TMove) {
+  @boundMethod
+  private join(role: EColor) {
+    GameClient.instance.join(role)
+      .then((payload: any) => this.setState({
+        role: payload.role,
+      }))
+      .catch();
+  }
+
+  private move(move: TMove) {
     const {game, role} = this.state;
     if (!game) return;
 
@@ -109,29 +138,22 @@ export default class ServerGame extends Component<RouteComponentProps<{ id: stri
 
     if (!testMove(game.rawGame, move)) return;
 
-    this.sendMove(move);
+    GameClient.instance.move(move);
   }
 
   @boundMethod
-  private joinGame(color: EColor) {
-    if (this.state.status !== EStatus.Connected) return;
-
-    this.connection.join(color);
-  }
-
-  private sendMove(move: TMove) {
-    if (this.state.status !== EStatus.Connected) return;
-
-    this.connection.move(move);
-  }
-
-  @boundMethod
-  private onUpdate(payload: { game?: IGame, role?: EColor }) {
-    this.setState(payload);
+  private handlePhaseUpdate(payload: { phase: EGamePhase }) {
+    if (!this.state.game) return;
+    this.setState({
+      game: {
+        ...this.state.game,
+        phase: payload.phase,
+      },
+    });
   }
 
   @boundMethod
-  private onPlayerUpdate(payload: IColorMap<IPlayer>) {
+  private handlePlayerUpdate(payload: IColorMap<IPlayerInfo>) {
     if (!this.state.game) return;
     this.setState({
       game: {
@@ -142,7 +164,7 @@ export default class ServerGame extends Component<RouteComponentProps<{ id: stri
   }
 
   @boundMethod
-  private onMove(payload: TMove) {
+  private handleMove(payload: TMove) {
     if (!this.state.game) return;
     this.setState({
       game: {
@@ -153,3 +175,5 @@ export default class ServerGame extends Component<RouteComponentProps<{ id: stri
     });
   }
 }
+
+export default withClient(GameClient.instance)(ServerGame);

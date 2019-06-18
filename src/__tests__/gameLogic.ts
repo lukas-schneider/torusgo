@@ -1,6 +1,4 @@
-import {EColor, IPosition, TGameBoard, TKo} from '../types/game';
-
-import {flipField, testPosition} from '../utils/gameLogic';
+import {flipField, testPosition, IPosition, TGameBoard, TKo, EColor} from '../shared/gameLogic';
 
 // NOTE: 0 is empty, 1 is black, 2 is white
 

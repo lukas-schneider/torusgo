@@ -3,5 +3,5 @@
     "src"
   ],
   "ext": "ts",
-  "exec": "ts-node --compiler ttypescript src/index.ts dev"
+  "exec": "NODE_OPTIONS=--inspect ts-node --compiler ttypescript src/index.ts dev"
 }

@@ -1,5 +1,3 @@
-import * as React  from 'react';
-import {Component} from 'react';
 import {
   Button,
   createStyles,
@@ -12,7 +10,9 @@ import {
   WithStyles,
   withStyles,
 }                  from '@material-ui/core';
-import {IRuleSet}  from '../types/game';
+import * as React  from 'react';
+import {Component} from 'react';
+import {IRuleSet}  from '../shared/gameLogic';
 
 const styles = () => createStyles({
   root: {},

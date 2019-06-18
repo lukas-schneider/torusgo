@@ -7,10 +7,12 @@ import {
   WithStyles,
   withStyles,
   Theme,
-}                                          from '@material-ui/core';
-import * as React                          from 'react';
-import {EColor, EGamePhase, IGameWithInfo} from '../types/game';
-import PlayerCard                          from './PlayerCard';
+}                                                               from '@material-ui/core';
+import * as React                                               from 'react';
+import {EColor}                                                 from '../shared/gameLogic';
+import {EGamePhase, IGameState, IColorMap, IExtendedPlayerInfo} from '../shared/types';
+import {enumValues}                                             from '../shared/utils';
+import PlayerCard                                               from './PlayerCard';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -23,7 +25,8 @@ const styles = (theme: Theme) => createStyles({
 });
 
 interface IProps extends WithStyles<typeof styles> {
-  game: IGameWithInfo,
+  game: IGameState,
+  role?: EColor,
   onOpenConfig?: () => void,
   onJoin?: (color: EColor) => void,
 }
@@ -45,13 +48,24 @@ function statusString(phase: EGamePhase): string {
 }
 
 const ScoreBoard: React.FC<IProps> = (props) => {
-  const {classes, game, onOpenConfig, onJoin} = props;
+  const {classes, game, onOpenConfig, onJoin, role} = props;
+
+  const players: Partial<IColorMap<IExtendedPlayerInfo>> = {};
+
+  for (let color of enumValues<EColor>(EColor)) {
+    players[color] = game.players[color] && {
+      name: game.players[color]!.name,
+      captured: game.rawGame.captured[color],
+      isMoving: game.rawGame.toMove === color,
+      isClient: role === color,
+    };
+  }
 
   return (
     <Paper square={true} className={classes.root}>
       <PlayerCard color={EColor.Black}
                   onJoin={onJoin}
-                  player={game.players[EColor.Black]}/>
+                  player={players[EColor.Black]}/>
       <Divider component={'hr'}/>
       <Typography variant={'body2'} align={'center'} className={classes.center}>
         <i>{statusString(game.phase)}</i><br/>
@@ -63,7 +77,7 @@ const ScoreBoard: React.FC<IProps> = (props) => {
       <Divider component={'hr'}/>
       <PlayerCard color={EColor.White}
                   onJoin={onJoin}
-                  player={game.players[EColor.White]}/>
+                  player={players[EColor.White]}/>
       {onOpenConfig &&
       <Button fullWidth
               color={'primary'}

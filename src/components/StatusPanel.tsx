@@ -5,7 +5,7 @@ import {
 }                                                                       from '@material-ui/core/colors';
 import {SignalCellularAlt}                                              from '@material-ui/icons';
 import * as React                                                       from 'react';
-import {EStatus}                                                        from '../types/utils';
+import {EStatus}                                                        from '../shared/types';
 
 const styles = (theme: Theme) => createStyles({
   root: {

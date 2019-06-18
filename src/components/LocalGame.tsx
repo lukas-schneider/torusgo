@@ -1,14 +1,15 @@
-import {boundMethod}                                        from 'autobind-decorator';
-import React, {Component}                                   from 'react';
-import {RouteComponentProps}                                from 'react-router';
-import {EColor, EGamePhase, IGameWithInfo, IRuleSet, TMove} from '../types/game';
-import {execMove, initGame, regMove, testMove}              from '../utils/gameLogic';
-import ConfigDialog                                         from './ConfigDialog';
-import SidePanel                                            from './ScoreBoard';
-import ThreeAnimation                                       from './ThreeAnimation';
+import {boundMethod}                                                    from 'autobind-decorator';
+import React, {Component}                                               from 'react';
+import {RouteComponentProps}                                            from 'react-router';
+import {execMove, initGame, regMove, testMove, IRuleSet, EColor, TMove} from '../shared/gameLogic';
+import {EGamePhase, IGameState}                                         from '../shared/types';
+import ConfigDialog                                                     from './ConfigDialog';
+import ScoreBoard                                                       from './ScoreBoard';
+import SideLayout                                                       from './SideLayout';
+import ThreeAnimation                                                   from './ThreeAnimation';
 
 interface IState {
-  game?: IGameWithInfo
+  game?: IGameState,
   configOpen: boolean,
 }
 
@@ -20,8 +21,31 @@ export default class LocalGame extends Component<RouteComponentProps, IState> {
     };
   }
 
+  public render() {
+    const {game, configOpen} = this.state;
+    return (
+      <>
+        <ConfigDialog open={configOpen}
+                      allowCancel={game !== undefined}
+                      onCancel={() => this.setState({configOpen: false})}
+                      onClose={this.setConfig}/>
+        {game &&
+        <SideLayout>
+          <ScoreBoard game={game}/>
+        </SideLayout>
+        }
+
+        {game &&
+        <ThreeAnimation rawGame={game.rawGame}
+                        onClick={(x, y) => this.testAndExecMove(regMove(x, y))}/>
+        }
+      </>
+    );
+  }
+
+
   @boundMethod
-  setConfig(ruleSet: IRuleSet, white: string, black: string) {
+  private setConfig(ruleSet: IRuleSet, white: string, black: string) {
     const rawGame = initGame(ruleSet);
     this.setState({
       game: {
@@ -31,17 +55,9 @@ export default class LocalGame extends Component<RouteComponentProps, IState> {
         players: {
           [EColor.White]: {
             name: white,
-            isMoving: rawGame.toMove === EColor.White,
-            isClient: true,
-            isConnected: true,
-            captured: rawGame.capturedByWhite,
           },
           [EColor.Black]: {
             name: black,
-            isMoving: rawGame.toMove === EColor.Black,
-            isClient: true,
-            isConnected: true,
-            captured: rawGame.capturedByBlack,
           },
         },
       },
@@ -49,7 +65,7 @@ export default class LocalGame extends Component<RouteComponentProps, IState> {
     });
   }
 
-  testAndExecMove(move: TMove) {
+  private testAndExecMove(move: TMove) {
     if (!this.state.game) return;
 
     if (!testMove(this.state.game.rawGame, move)) return;
@@ -62,26 +78,5 @@ export default class LocalGame extends Component<RouteComponentProps, IState> {
         moveNumber: this.state.game.moveNumber + 1,
       },
     });
-  }
-
-  render() {
-    const {game, configOpen} = this.state;
-    return (
-      <>
-        <ConfigDialog open={configOpen}
-                      allowCancel={game !== undefined}
-                      onCancel={() => this.setState({configOpen: false})}
-                      onClose={this.setConfig}/>
-
-        {game &&
-        <SidePanel onOpenConfig={() => this.setState({configOpen: true})} game={game}/>
-        }
-
-        {game &&
-        <ThreeAnimation rawGame={game.rawGame}
-                        onClick={(x, y) => this.testAndExecMove(regMove(x, y))}/>
-        }
-      </>
-    );
   }
 }

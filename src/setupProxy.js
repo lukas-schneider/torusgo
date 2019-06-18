@@ -6,8 +6,5 @@ const proxy = require('http-proxy-middleware');
 module.exports = function (app) {
 
   // redirects websocket connections
-  app.use('/ws', proxy({target: 'http://localhost:3450', ws: true}));
-
-  // redirects createGame requests
-  app.use('/createGame', proxy({target: 'http://localhost:3450'}));
+  app.use(proxy('/ws', {target: 'http://localhost:3450', ws: true}));
 };

@@ -18,9 +18,24 @@ export enum EClientEvent {
 }
 
 export enum EStatus {
-  Connected    = 'connect',
-  Connecting   = 'disconnect',
-  Disconnected = 'reconnecting',
+  Connected,
+  Connecting,
+  Disconnected,
+}
+
+export enum EStatusEvent {
+  Connect          = 'connect',
+  ConnectError     = 'connect_error',
+  ConnectTimeout   = 'connect_timeout',
+  Connecting       = 'connecting',
+  Disconnect       = 'disconnect',
+  Error            = 'error',
+  Reconnect        = 'reconnect',
+  ReconnectAttempt = 'reconnect_attempt',
+  ReconnectFailed  = 'reconnect_failed',
+  ReconnectError   = 'reconnect_error',
+  Reconnecting     = 'reconnecting',
+
 }
 
 export enum EGamePhase {
@@ -31,8 +46,24 @@ export enum EGamePhase {
   BlackVictory,
 }
 
+export interface IError {
+  name: string,
+  message: string,
+  stack?: string;
+  payload?: any,
+}
+
 export interface IPlayerInfo {
   name: string,
+  // this might have other properties in the future.
+}
+
+export interface IExtendedPlayerInfo {
+  name: string,
+  isMoving: boolean,
+  isClient: boolean,
+  captured: number,
+
   // this might have other properties in the future.
 }
 

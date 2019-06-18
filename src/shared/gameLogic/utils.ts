@@ -7,8 +7,10 @@ export function initGame(ruleSet: IRuleSet): IRawGame {
     board: new Array(ruleSet.size.x * ruleSet.size.y).fill(0), // TODO handle handicap
     koPosition: null,
     numPasses: 0,
-    capturedByBlack: 0,
-    capturedByWhite: 0,
+    captured: {
+      [EColor.Black]: 0,
+      [EColor.White]: 0,
+    },
   };
 }
 

@@ -19,3 +19,7 @@ export function checkName(name: string) {
 
   return nameRegex.test(name);
 }
+
+export function enumValues<T>(obj: any): T[] {
+  return Object.keys(obj).filter((key) => isNaN(Number(key))).map((key) => obj[key]);
+}

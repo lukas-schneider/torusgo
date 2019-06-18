@@ -13,12 +13,13 @@ import {
   Vector3,
   WebGLRenderer,
 }                                             from 'three';
+import {IRawGame, EColor}                     from '../shared/gameLogic';
+import {contains, sign}                       from '../shared/utils';
 import RayCast                                from '../ThreeGraphic/RayCast';
 import RayCastTorus                           from '../ThreeGraphic/RayCastTorus';
 import TorusMaterialBoard                     from '../ThreeGraphic/TorusMaterialBoard';
 import TorusMaterialStone                     from '../ThreeGraphic/TorusMaterialStone';
-import {EColor, IRawGame}                     from '../types/game';
-import {contains, EKeys, sign, TKeyState}     from '../types/utils';
+import {TKeyState, EKeys}                     from '../utils/types';
 
 // colors are const
 const colorClear = new Color(0x4286f4);

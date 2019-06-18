@@ -1,7 +1,7 @@
 import {Server}      from 'http';
 import {generate}    from 'shortid';
 import * as SocketIO from 'socket.io';
-import {IRuleSet}    from '../../shared/gameLogic';
+import {IRuleSet}    from '../../src/shared/gameLogic';
 import Game          from './Game';
 import Session       from './Session';
 import {Collection}  from './utils';
@@ -13,7 +13,7 @@ export default class GameServer {
 
   public readonly sessions: Collection<Session> = new Collection<Session>();
 
-  public readonly server: SocketIO.Server;
+  private readonly server: SocketIO.Server;
 
   public constructor(httpServer: Server) {
     this.server = SocketIO(httpServer, {
@@ -22,7 +22,7 @@ export default class GameServer {
     });
 
     this.server.on('connection', (socket) => {
-      const session = new Session(socket, this);
+      const session = new Session(socket);
 
       this.sessions.add(session);
       socket.on('disconnect', () => this.sessions.remove(session));
@@ -39,6 +39,10 @@ export default class GameServer {
     this.games.add(new Game(id, ruleSet));
 
     return id;
+  }
+
+  public emit(room: string, event: string, ...args: any[]) {
+    this.server.to(room).emit(event, ...args);
   }
 
 }

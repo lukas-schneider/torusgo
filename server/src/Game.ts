@@ -1,5 +1,5 @@
-import debug                                                          from 'debug';
-import {EventEmitter}                                                 from 'events';
+import Debug          from 'debug';
+import {EventEmitter} from 'events';
 import {
   execMove,
   initGame,
@@ -8,16 +8,25 @@ import {
   EColor,
   IRuleSet,
   TMove,
-}                                                                     from '../../shared/gameLogic';
-import {IGameState, IColorMap, EGamePhase, EServerEvent, IPlayerInfo} from '../../shared/types';
-import Session                                                        from './Session';
+}                     from '../../src/shared/gameLogic';
+import {
+  IGameState,
+  IColorMap,
+  EGamePhase,
+  EServerEvent,
+  IPlayerInfo,
+}                     from '../../src/shared/types';
+import {enumValues}   from '../../src/shared/utils';
+import GameServer     from './GameServer';
+import Session        from './Session';
 
-const debugStatus = debug('torusgo:game');
+const debug = Debug('torusgo:game');
 
 export default class Game extends EventEmitter {
   static ROOM_PREFIX = 'game/';
 
   public id: string;
+  public room: string;
 
   // ---- game state ----
   public rawGame: IRawGame;
@@ -31,33 +40,29 @@ export default class Game extends EventEmitter {
   constructor(id: string, ruleSet: IRuleSet) {
     super();
     this.id = id;
+    this.room = Game.ROOM_PREFIX + this.id;
     this.rawGame = initGame(ruleSet);
-    this.debug('created with ruleset %o', ruleSet);
 
-    this.on(EServerEvent.Move, (...args) => this.debug('executed move %o', args[0]));
+    debug('[%s] initialized with rule set %o', this.id, ruleSet);
 
-    this.on(EServerEvent.PhaseUpdate, () => this.debug('switched to phase %o', this.phase));
-
-    this.on(
-      EServerEvent.PlayerUpdate,
-      () => this.debug('updated players %o', this.getPlayerInfo()),
-    );
-  }
-
-  private debug(format: string, ...args: any[]) {
-    debugStatus('[%s]' + format, Game.ROOM_PREFIX + this.id, ...args);
+    for (let event of enumValues<EServerEvent>(EServerEvent)) {
+      this.on(event, (...args) => {
+        debug('[%s] <= %s', this.id, event, ...args);
+        GameServer.instance.emit(this.room, event, ...args);
+      });
+    }
   }
 
   public connect(session: Session, role: EColor) {
     this.players[role] = session;
 
-    this.emit(EServerEvent.PlayerUpdate);
+    this.emit(EServerEvent.PlayerUpdate, this.getPlayerInfo());
   }
 
   public disconnect(role: EColor) {
     delete this.players[role];
 
-    this.emit(EServerEvent.PlayerUpdate);
+    this.emit(EServerEvent.PlayerUpdate, this.getPlayerInfo());
   }
 
   public getState(): IGameState {
