@@ -19,7 +19,6 @@ export interface IPosition {
 
 export type TKo = IPosition | null;
 
-
 export enum EColor {
   Black = 1,
   White = 2,
@@ -35,13 +34,13 @@ export interface ISize {
 }
 
 export interface IRuleSet {
-  size: ISize,
+  size: Readonly<ISize>,
   komi: number,
   handicap: number,
 }
 
 export interface IRawGame {
-  ruleSet: IRuleSet,
+  ruleSet: Readonly<IRuleSet>,
   toMove: EColor,
   board: TGameBoard,
   koPosition: TKo,

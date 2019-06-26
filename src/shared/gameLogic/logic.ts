@@ -37,6 +37,14 @@ export function posToIndex(size: ISize, pos: IPosition) {
   return cPos.y + cPos.x * size.y;
 }
 
+export function indexToX(size: ISize, index: number) {
+  return Math.floor(index / size.y);
+}
+
+export function indexToY(size: ISize, index: number) {
+  return index % size.y;
+}
+
 export function getField(size: ISize, board: TGameBoard, pos: IPosition): TField {
   return board[posToIndex(size, pos)];
 }

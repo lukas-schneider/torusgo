@@ -1,28 +1,18 @@
-import {createStyles, WithStyles, withStyles, withTheme, WithTheme} from '@material-ui/core';
-import {boundMethod}                                                from 'autobind-decorator';
-import * as React                                                   from 'react';
-import Stats                                                        from 'stats.js';
+import {BoxGeometry, Color, Matrix4, Mesh, PerspectiveCamera, Vector2, Vector3} from 'three';
 import {
-  BoxGeometry,
-  Color,
-  Matrix4,
-  Mesh,
-  PerspectiveCamera,
-  Scene,
-  Vector2,
-  Vector3,
-  WebGLRenderer,
-}                                                                   from 'three';
-import {IRawGame, EColor}                                           from '../shared/gameLogic';
-import {contains, sign}                                             from '../shared/utils';
-import RayCast                                                      from '../ThreeGraphic/RayCast';
+  IRawGame,
+  EColor,
+}                                                                               from '../../shared/gameLogic';
+import {sign}                                                                   from '../../shared/utils';
+import AbstractAnimation
+                                                                                from '../AbstractAnimation';
+import RayCast                                                                  from './RayCast';
 import RayCastTorus
-                                                                    from '../ThreeGraphic/RayCastTorus';
+                                                                                from './RayCastTorus';
 import TorusMaterialBoard
-                                                                    from '../ThreeGraphic/TorusMaterialBoard';
+                                                                                from './TorusMaterialBoard';
 import TorusMaterialStone
-                                                                    from '../ThreeGraphic/TorusMaterialStone';
-import {TKeyState, EKeys}                                           from '../utils/types';
+                                                                                from './TorusMaterialStone';
 
 // rainbow!
 const violet = new Color(0x9400D4);
@@ -35,29 +25,22 @@ const red = new Color(0xFF0000);
 
 const box222 = new BoxGeometry(2, 2, 2);
 
-interface IProps extends WithStyles<typeof styles>, WithTheme {
-  rawGame: IRawGame,
-  onHover?: (x?: number, y?: number) => void,
-  onClick?: (x: number, y: number) => void,
+export enum EKeys {
+  Up       = 'KeyW',
+  Down     = 'KeyS',
+  Left     = 'KeyA',
+  Right    = 'KeyD',
+  TwistIn  = 'KeyQ',
+  TwistOut = 'KeyE',
 }
 
-const styles = createStyles({
-  root: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-});
+export type TKeyState = {
+  [key in EKeys]: boolean;
+};
 
-class ThreeAnimation extends React.Component<IProps> {
-  private canvas: HTMLCanvasElement;
-  private renderer: WebGLRenderer;
-  private scene: Scene;
-  private requestId: number; // given by requestAnimationFrame
+class ThreeAnimation extends AbstractAnimation {
+  public camera: PerspectiveCamera;
 
-  private camera: PerspectiveCamera;
   private twist: number;
 
   private boardGeometry: BoxGeometry; // torus cannot be scaled to box222?
@@ -72,11 +55,6 @@ class ThreeAnimation extends React.Component<IProps> {
   private inverseViewMatrix: Matrix4;
   private inverseProjectionMatrix: Matrix4;
   private inverseModelMatrixBoard: Matrix4;
-
-  // result of the CPU sided raytracing, i.e. field that is mouseovered
-  private focusedField?: Vector2;
-
-  private stats: Stats;
 
   private keyState: TKeyState = {
     KeyA: false,
@@ -99,104 +77,27 @@ class ThreeAnimation extends React.Component<IProps> {
   // for party
   private partyMode = false;
 
-  private colorClear = new Color(0x4286f4);
   private colorBoard = new Color(0xFF6B00);
   private colorStoneWhite = new Color(0xe6ffff);
   private colorStoneBlack = new Color(0x1a0008);
   private colorStoneHover = new Color(0xFFD700);
 
-  // ---- lifecycle methods ----
-
-  public componentDidMount() {
-    const {theme} = this.props;
-    this.colorClear.setStyle(theme.palette.background.default);
-    this.colorBoard.setStyle(theme.palette.primary.main);
-    this.colorStoneBlack.setStyle(theme.palette.common.black);
-    this.colorStoneWhite.setStyle(theme.palette.common.white);
-
-    this.init();
-
-    window.addEventListener('resize', this.handleResize);
-    this.canvas.addEventListener('mousemove', this.handleMouseMove);
-    this.canvas.addEventListener('click', this.handleMouseClick);
-    this.canvas.addEventListener('keydown', this.handleKeyDown);
-    this.canvas.addEventListener('keyup', this.handleKeyUp);
-  }
-
-  public componentDidUpdate(prevProps: IProps) {
-    if (this.props.rawGame.ruleSet.size.x !== prevProps.rawGame.ruleSet.size.x
-      || this.props.rawGame.ruleSet.size.y !== prevProps.rawGame.ruleSet.size.y) {
-      this.cleanUpStones();
-
-      this.initThickness();
-      this.initStones();
-    }
-  }
-
-  public componentWillUnmount() {
-    this.cleanUp();
-
-    window.removeEventListener('resize', this.handleResize);
-
-    this.canvas.removeEventListener('mousemove', this.handleMouseMove);
-    this.canvas.removeEventListener('click', this.handleMouseClick);
-    this.canvas.removeEventListener('keydown', this.handleKeyDown);
-    this.canvas.removeEventListener('keyup', this.handleKeyUp);
-  }
-
-  public render() {
-    const {classes} = this.props;
-    return <canvas className={classes.root}
-                   tabIndex={0}
-                   width={'100%'}
-                   height={'100%'}
-                   ref={(canvas) => this.canvas = canvas!}/>;
-  }
-
-
   // ---- event handlers ----
 
-  @boundMethod
-  private handleResize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    this.camera.aspect = w / h;
+  public handleGameStateChange(rawGame: IRawGame): void {
+    this.rawGame = rawGame;
+  }
+
+  public handleResize(width: number, height: number) {
+    this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(w, h);
   }
 
-  @boundMethod
-  private handleMouseMove(event: MouseEvent) {
-    const offsetX = event.clientX;
-    const offsetY = event.clientY;
-
-    if (offsetX > 0 && offsetX < this.canvas.width
-      && offsetY > 0 && offsetY < this.canvas.height) {
-      this.mouse.x = 2.0 * (offsetX) / this.canvas.width - 1.0;
-      this.mouse.y = -2.0 * (offsetY) / this.canvas.height + 1.0;
-    }
+  public handleMouseMove(x: number, y: number) {
+    this.mouse.set(x, y);
   }
 
-  @boundMethod
-  private handleMouseClick() {
-    this.triggerClick();
-  }
-
-  @boundMethod
-  private handleKeyDown(event: KeyboardEvent) {
-    if (contains(EKeys, event.code)) {
-      this.updateKeyState(event.code as EKeys, true);
-    }
-  }
-
-  @boundMethod
-  private handleKeyUp(event: KeyboardEvent) {
-    if (contains(EKeys, event.code)) {
-      this.updateKeyState(event.code as EKeys, false);
-    }
-  }
-
-  private updateKeyState(keyCode: EKeys, pressed: boolean) {
+  public handleKeyStateChange(keyCode: EKeys, pressed: boolean) {
     if (this.keyState[keyCode] === pressed) return;
 
     this.keyState[keyCode] = pressed;
@@ -212,68 +113,19 @@ class ThreeAnimation extends React.Component<IProps> {
     ) * this.twistSpeed;
   }
 
-  // ---- event triggers ----
-
-  private triggerHover() {
-    if (this.focusedField) {
-      this.props.onHover && this.props.onHover(this.focusedField.x, this.focusedField.y);
-    } else {
-      this.props.onHover && this.props.onHover();
-    }
-  }
-
-  private triggerClick() {
-    if (!this.focusedField) return;
-
-    this.props.onClick && this.props.onClick(this.focusedField.x, this.focusedField.y);
-  }
-
   // ---- init functions ----
 
-  private init() {
-    this.scene = new Scene();
-
+  public init() {
     this.initThickness();
-
-    this.initRenderer();
     this.initCamera();
-
-    this.handleResize();
-
     this.initTwist();
     this.initMouse();
     this.initStones();
     this.initBoard();
-
-    this.initStats();
-
-    this.animate();
   }
 
   private initThickness() {
-    this.thickness = this.props.rawGame.ruleSet.size.x / this.props.rawGame.ruleSet.size.y / 2;
-  }
-
-  private initRenderer() {
-    this.renderer = new WebGLRenderer({canvas: this.canvas});
-
-    this.renderer.getContext().getExtension('EXT_frag_depth');
-    let supportedExtensions = this.renderer.getContext().getSupportedExtensions();
-    if (supportedExtensions == null) {
-      supportedExtensions = [];
-    }
-    if (-1 === supportedExtensions.indexOf('EXT_frag_depth')) {
-      alert('EXT_frag_depth extension not supported! 3D view not available!');
-    }
-    this.renderer.setClearColor(this.colorClear, 1);
-  }
-
-  private initTwist() {
-    this.twist = 0;
-  }
-
-  private initMouse() {
-    this.mouse = new Vector2();
+    this.thickness = this.rawGame.ruleSet.size.x / this.rawGame.ruleSet.size.y / 2;
   }
 
   private initCamera() {
@@ -288,11 +140,19 @@ class ThreeAnimation extends React.Component<IProps> {
     this.cameraDelta = new Vector2();
   }
 
+  private initTwist() {
+    this.twist = 0;
+  }
+
+  private initMouse() {
+    this.mouse = new Vector2();
+  }
+
   private initStones() {
     this.stoneMaterialArray = [];
     this.stoneMeshArray = [];
-    for (let i = 0; i < this.props.rawGame.ruleSet.size.x; i++) {
-      for (let j = 0; j < this.props.rawGame.ruleSet.size.y; j++) {
+    for (let i = 0; i < this.rawGame.ruleSet.size.x; i++) {
+      for (let j = 0; j < this.rawGame.ruleSet.size.y; j++) {
         const material = new TorusMaterialStone();
         const mesh = new Mesh(box222, material);
         this.stoneMaterialArray.push(material);
@@ -313,45 +173,19 @@ class ThreeAnimation extends React.Component<IProps> {
     this.scene.add(this.boardMesh);
   }
 
-  private initStats() {
-    this.stats = new Stats();
-    this.stats.dom.style.cssText = 'position:absolute;left:0;cursor:pointer;opacity:0.9;z-index:10000;';
-    this.canvas.parentElement!.insertBefore(this.stats.dom, this.canvas);
-
-    this.stats.showPanel(0);
-  }
-
   // ---- animation functions ----
 
-  @boundMethod
-  private animate() {
-    this.requestId = requestAnimationFrame(this.animate);
-
-    this.stats.begin();
-
+  public update() {
     this.updateStoneTransforms();
     this.updateTwistKeyboard();
     this.updateCameraTrackballKeyboard();
-
     this.updateRayCastingMatrices();
-
-    const previousFocusField = this.focusedField;
-
     this.updateHover();
-    if (this.focusedField !== previousFocusField) {
-      this.triggerHover();
-    }
-
     this.updateUniforms();
-
-    this.renderer.render(this.scene, this.camera);
-
-    this.stats.end();
   }
 
   private updateStoneTransforms() {
-    const x = this.props.rawGame.ruleSet.size.x;
-    const y = this.props.rawGame.ruleSet.size.y;
+    const {x, y} = this.rawGame.ruleSet.size;
 
     const scaleX = (this.thickness + this.stoneSize)
       * Math.PI / x * 0.9; // the 0.9 enables a small gap
@@ -424,6 +258,8 @@ class ThreeAnimation extends React.Component<IProps> {
   }
 
   private updateHover() {
+    const {x, y} = this.rawGame.ruleSet.size;
+
     const [cameraPosOC, rayDirectionOC] = RayCast(
       this.mouse,
       this.camera.position,
@@ -440,7 +276,7 @@ class ThreeAnimation extends React.Component<IProps> {
 
     // check if torus is hit
     if (distance < 0) {
-      this.focusedField = undefined;
+      this.selectedField = undefined;
       return;
     }
 
@@ -473,22 +309,21 @@ class ThreeAnimation extends React.Component<IProps> {
     }
 
     // calculate the indices on a 2d-array
-    let i = Math.round(phi / (2.0 * Math.PI / this.props.rawGame.ruleSet.size.x));
-    let j = Math.round(theta / (2.0 * Math.PI / this.props.rawGame.ruleSet.size.y));
+    let i = Math.round(phi / (2.0 * Math.PI / x));
+    let j = Math.round(theta / (2.0 * Math.PI / y));
 
-    if (i === this.props.rawGame.ruleSet.size.x) {
+    if (i === x) {
       i = 0;
     }
-    if (j === this.props.rawGame.ruleSet.size.y) {
+    if (j === y) {
       j = 0;
     }
 
-    this.focusedField = new Vector2(i, j);
+    this.selectedField = new Vector2(i, j);
   }
 
   private updateUniforms() {
-    const x = this.props.rawGame.ruleSet.size.x;
-    const y = this.props.rawGame.ruleSet.size.y;
+    const {x, y} = this.rawGame.ruleSet.size;
 
     this.camera.updateMatrixWorld(true);
     this.camera.updateProjectionMatrix();
@@ -516,7 +351,7 @@ class ThreeAnimation extends React.Component<IProps> {
     for (let i = 0; i < x * y; i++) {
       const mesh = this.stoneMeshArray[i];
       const material = this.stoneMaterialArray[i];
-      const state = this.props.rawGame.board[i];
+      const state = this.rawGame.board[i];
 
       mesh.updateMatrixWorld(true);
 
@@ -591,7 +426,7 @@ class ThreeAnimation extends React.Component<IProps> {
         }
       }
 
-      if (this.focusedField && i === this.focusedField.y + y * this.focusedField.x) {
+      if (this.allowInput && this.selectedField && i === this.selectedField.y + y * this.selectedField.x) {
         mesh.visible = true;
         material.uniforms.stoneColor.value = this.colorStoneHover;
       }
@@ -600,25 +435,16 @@ class ThreeAnimation extends React.Component<IProps> {
 
   // ---- clean up functions ----
 
-  private cleanUp() {
-    this.renderer.dispose();
+  public cleanUp() {
     this.cleanUpStones();
     box222.dispose(); // this one kinda special
     this.cleanUpBoard();
-
-    this.cleanUpStats();
-
-    cancelAnimationFrame(this.requestId);
   }
 
   private cleanUpBoard() {
     this.scene.remove(this.boardMesh);
     this.boardGeometry.dispose();
     this.boardMaterial.dispose();
-  }
-
-  private cleanUpStats() {
-    this.stats.dom.remove();
   }
 
   private cleanUpStones() {
@@ -633,4 +459,4 @@ class ThreeAnimation extends React.Component<IProps> {
   }
 }
 
-export default withTheme(withStyles(styles)(ThreeAnimation));
+export default ThreeAnimation;

@@ -3,10 +3,10 @@ import React, {Component}                                               from 're
 import {RouteComponentProps}                                            from 'react-router';
 import {execMove, initGame, regMove, testMove, IRuleSet, EColor, TMove} from '../shared/gameLogic';
 import {EGamePhase, IGameState}                                         from '../shared/types';
+import Animation                                                        from './AnimationCanvas';
 import ConfigDialog                                                     from './ConfigDialog';
 import ScoreBoard                                                       from './ScoreBoard';
 import SideLayout                                                       from './SideLayout';
-import ThreeAnimation                                                   from './ThreeAnimation';
 
 interface IState {
   game?: IGameState,
@@ -36,22 +36,21 @@ export default class LocalGame extends Component<RouteComponentProps, IState> {
         }
 
         {game &&
-        <ThreeAnimation rawGame={game.rawGame}
-                        onClick={(x, y) => this.testAndExecMove(regMove(x, y))}/>
+        <Animation allowInput three
+                   rawGame={game.rawGame}
+                   onClick={(x, y) => this.testAndExecMove(regMove(x, y))}/>
         }
       </>
     );
   }
 
-
   @boundMethod
   private setConfig(ruleSet: IRuleSet, white: string, black: string) {
-    const rawGame = initGame(ruleSet);
     this.setState({
       game: {
-        rawGame: rawGame,
+        rawGame: initGame(ruleSet),
         phase: EGamePhase.Running,
-        moveNumber: 0,
+        moveNumber: 3,
         players: {
           [EColor.White]: {
             name: white,

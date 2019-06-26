@@ -2,6 +2,8 @@ import {Typography, LinearProgress, Paper} from '@material-ui/core';
 import {boundMethod}                       from 'autobind-decorator';
 import React, {Component}                  from 'react';
 import {RouteComponentProps}               from 'react-router';
+import GameClient                          from '../network/GameClient';
+import withClient                          from '../network/withClient';
 import {
   execMove,
   regMove,
@@ -17,12 +19,10 @@ import {
   EGamePhase,
   EServerEvent,
 }                                          from '../shared/types';
-import GameClient                          from '../utils/GameClient';
-import withClient                          from '../utils/withClient';
+import AnimationCanvas                     from './AnimationCanvas';
 import MainLayout                          from './MainLayout';
 import ScoreBoard                          from './ScoreBoard';
 import SideLayout                          from './SideLayout';
-import ThreeAnimation                      from './ThreeAnimation';
 
 interface IState {
   game?: IGameState,
@@ -67,8 +67,9 @@ class OnlineGame extends Component<RouteComponentProps<{ id: string }>, IState> 
                         role={role}
                         onJoin={this.join}/>
           </SideLayout>
-          <ThreeAnimation rawGame={game.rawGame}
-                          onClick={(x, y) => this.move(regMove(x, y))}/>
+          <AnimationCanvas rawGame={game.rawGame} three
+                           allowInput={game.rawGame.toMove === role}
+                           onClick={(x, y) => this.move(regMove(x, y))}/>
         </>
       );
     } else {
