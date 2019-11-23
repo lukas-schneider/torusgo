@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-scripts": "3.0.1",
-    "typescript": "3.5.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-scripts": "3.2.0",
+    "typescript": "3.7.2",
     "three": "latest",
     "socket.io-client": "latest",
     "react-autobind": "latest",
@@ -38,15 +38,15 @@
     ]
   },
   "devDependencies": {
-    "@material-ui/core": "^4.0.1",
-    "@types/debug": "^4.1.4",
-    "@types/jest": "24.0.13",
-    "@types/node": "12.0.4",
-    "@types/react": "16.8.19",
-    "@types/react-dom": "16.8.4",
-    "@types/react-router-dom": "^4.3.3",
+    "@material-ui/core": "^4.7.0",
+    "@types/debug": "^4.1.5",
+    "@types/jest": "24.0.23",
+    "@types/node": "12.12.12",
+    "@types/react": "16.9.13",
+    "@types/react-dom": "16.9.4",
+    "@types/react-router-dom": "^5.1.2",
     "@types/socket.io-client": "^1.4.32",
     "@types/stats.js": "^0.17.0",
-    "http-proxy-middleware": "^0.19.1"
+    "http-proxy-middleware": "^0.20.0"
   }
 }
