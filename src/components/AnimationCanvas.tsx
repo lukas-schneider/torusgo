@@ -115,6 +115,7 @@ class AnimationCanvas extends React.Component<IProps> {
 
     this.renderer.setSize(w, h);
 
+
     this.animation.handleResize(w, h);
   }
 

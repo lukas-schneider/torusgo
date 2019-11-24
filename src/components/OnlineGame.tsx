@@ -67,7 +67,7 @@ class OnlineGame extends Component<RouteComponentProps<{ id: string }>, IState> 
                         role={role}
                         onJoin={this.join}/>
           </SideLayout>
-          <AnimationCanvas rawGame={game.rawGame} three
+          <AnimationCanvas rawGame={game.rawGame}
                            allowInput={game.rawGame.toMove === role}
                            onClick={(x, y) => this.move(regMove(x, y))}/>
         </>

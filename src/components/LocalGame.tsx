@@ -36,7 +36,7 @@ export default class LocalGame extends Component<RouteComponentProps, IState> {
         }
 
         {game &&
-        <Animation allowInput three
+        <Animation allowInput
                    rawGame={game.rawGame}
                    onClick={(x, y) => this.testAndExecMove(regMove(x, y))}/>
         }
