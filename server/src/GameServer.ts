@@ -1,6 +1,6 @@
 import {Server}      from 'http';
 import {generate}    from 'shortid';
-import * as SocketIO from 'socket.io';
+import {Server as SocketIoServer} from 'socket.io';
 import {IRuleSet}    from '../../src/shared/gameLogic';
 import Game          from './Game';
 import Session       from './Session';
@@ -13,10 +13,10 @@ export default class GameServer {
 
   public readonly sessions: Collection<Session> = new Collection<Session>();
 
-  private readonly server: SocketIO.Server;
+  private readonly server: SocketIoServer;
 
   public constructor(httpServer: Server) {
-    this.server = SocketIO(httpServer, {
+    this.server = new SocketIoServer(httpServer, {
       path: '/ws',
       pingInterval: 2500,
     });

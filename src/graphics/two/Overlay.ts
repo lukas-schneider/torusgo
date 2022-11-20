@@ -1,4 +1,4 @@
-import {Group, MeshBasicMaterial, Mesh, Shape, ShapeBufferGeometry} from 'three';
+import {Group, MeshBasicMaterial, Mesh, Shape, ShapeGeometry} from 'three';
 import {ISize}                                                      from '../../shared/gameLogic';
 
 export default class Overlay extends Group {
@@ -25,7 +25,7 @@ export default class Overlay extends Group {
     shape.lineTo(-0.5, y - 0.5);
     shape.lineTo(-0.5, -0.5);
 
-    this.add(this.mesh = new Mesh(new ShapeBufferGeometry(shape), this.material));
+    this.add(this.mesh = new Mesh(new ShapeGeometry(shape), this.material));
   }
 
   public dispose() {

@@ -253,8 +253,8 @@ class ThreeAnimation extends AbstractAnimation {
 
   private updateRayCastingMatrices() {
     this.inverseViewMatrix = this.camera.matrixWorld;
-    this.inverseProjectionMatrix = new Matrix4().getInverse(this.camera.projectionMatrix);
-    this.inverseModelMatrixBoard = new Matrix4().getInverse(this.boardMesh.matrixWorld);
+    this.inverseProjectionMatrix = new Matrix4().copy(this.camera.projectionMatrix).invert();
+    this.inverseModelMatrixBoard = new Matrix4().copy(this.boardMesh.matrixWorld).invert();
   }
 
   private updateHover() {
@@ -378,31 +378,6 @@ class ThreeAnimation extends AbstractAnimation {
           case 2: {
             mesh.visible = true;
             material.uniforms.stoneColor.value = indigo;
-            break;
-          }
-          case 3: {
-            mesh.visible = true;
-            material.uniforms.stoneColor.value = blue;
-            break;
-          }
-          case 4: {
-            mesh.visible = true;
-            material.uniforms.stoneColor.value = green;
-            break;
-          }
-          case 5: {
-            mesh.visible = true;
-            material.uniforms.stoneColor.value = yellow;
-            break;
-          }
-          case 6: {
-            mesh.visible = true;
-            material.uniforms.stoneColor.value = orange;
-            break;
-          }
-          case 7: {
-            mesh.visible = true;
-            material.uniforms.stoneColor.value = red;
             break;
           }
         }
