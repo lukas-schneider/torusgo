@@ -60,7 +60,7 @@ class ConfigDialog extends Component<IProps, IState> {
     const {white, black, ruleSet} = this.state;
     const {classes, onClose, onCancel, open, allowCancel} = this.props;
     return (
-      <Dialog className={classes.root} open={open} disableBackdropClick disableEscapeKeyDown>
+      <Dialog className={classes.root} open={open} disableEscapeKeyDown>
         <DialogTitle>Local Game</DialogTitle>
         <DialogContent className={classes.content}>
           <DialogContentText>

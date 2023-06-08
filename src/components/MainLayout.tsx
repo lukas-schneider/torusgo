@@ -30,7 +30,7 @@ const MainLayout: React.FC<WithStyles<typeof styles>> = (props) => {
             lg={4}
             container
             direction={'column'}
-            justify={'flex-start'}
+            justify-content={'flex-start'}
             alignItems={'stretch'}>
         {React.Children.map(children, (child) =>
           <Grid item className={classes.item}>

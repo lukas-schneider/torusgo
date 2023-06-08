@@ -22,7 +22,6 @@ uniform mat4 inverseModelMatrix;
 uniform mat4 transposedInverseModelMatrix;
 uniform vec3 stoneColor;
 
-#extension GL_EXT_frag_depth : enable
 
 float iSphere(in vec3 ro, in vec3 rd) {
   float b = 2.0 * dot(ro, rd);

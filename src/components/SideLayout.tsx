@@ -26,7 +26,7 @@ const SideLayout: React.FC<WithStyles<typeof styles>> = (props) => {
           spacing={2}
           className={classes.root}
           direction={'column'}
-          justify={'flex-start'}
+          justify-content={'flex-start'}
           alignItems={'flex-end'}>
       {React.Children.map(children, (child) =>
         <Grid item className={classes.item}>

@@ -17,11 +17,11 @@ import TorusMaterialStone
 // rainbow!
 const violet = new Color(0x9400D4);
 const indigo = new Color(0x4B0082);
-const blue = new Color(0x0000FF);
-const green = new Color(0x00FF00);
-const yellow = new Color(0xFFFF00);
-const orange = new Color(0xFF7F00);
-const red = new Color(0xFF0000);
+const _blue = new Color(0x0000FF);
+const _green = new Color(0x00FF00);
+const _yellow = new Color(0xFFFF00);
+const _orange = new Color(0xFF7F00);
+const _red = new Color(0xFF0000);
 
 const box222 = new BoxGeometry(2, 2, 2);
 
@@ -355,7 +355,7 @@ class ThreeAnimation extends AbstractAnimation {
 
       mesh.updateMatrixWorld(true);
 
-      const inverseModelMatrix = new Matrix4().getInverse(mesh.matrixWorld);
+      const inverseModelMatrix = mesh.matrixWorld.clone().invert()
       const transposedInverseModelMatrix = inverseModelMatrix.clone().transpose();
 
       material.uniforms.viewPort.value = viewPort;

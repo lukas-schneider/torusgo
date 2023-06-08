@@ -10,6 +10,8 @@ void main()
 `;
 
 const fragmentShader = `
+#define PI 3.1415926535897932384626433832795
+#define EPS 0.000000001
 
 // these are supplied by three js
 uniform mat4 projectionMatrix;
@@ -28,9 +30,6 @@ uniform float thickness;
 uniform float twist;
 uniform vec3  torusColor;
 
-#extension GL_EXT_frag_depth : enable
-#define PI 3.1415926535897932384626433832795
-#define EPS 0.000000001
 
 float iTorus( in vec3 ro, in vec3 rd, in vec2 torus )
 {
