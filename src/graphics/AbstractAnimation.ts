@@ -4,7 +4,7 @@ import {EKeys}                  from './three/ThreeAnimation';
 
 export default abstract class AbstractAnimation {
   public scene: Scene = new Scene();
-  public camera: Camera = new Camera();
+  public camera: Camera;
   public selectedField?: Vector2;
 
   public constructor(

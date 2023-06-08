@@ -1,8 +1,16 @@
-import {Grid, createStyles, WithStyles, withStyles, Theme, Hidden} from '@material-ui/core';
-import * as React                                                  from 'react';
+import {Grid, Hidden} from '@mui/material';
+import {styled}       from '@mui/material/styles';
+import * as React     from 'react';
 
-const styles = (theme: Theme) => createStyles({
-  root: {
+const PREFIX = 'MainLayout';
+
+const classes = {
+  root: `${PREFIX}-root`,
+  item: `${PREFIX}-item`,
+};
+
+const StyledGrid = styled(Grid)(({theme}) => ({
+  [`&.${classes.root}`]: {
     position: 'absolute',
     right: 0,
     left: 0,
@@ -13,13 +21,14 @@ const styles = (theme: Theme) => createStyles({
     backgroundColor: theme.palette.background.default,
     padding: theme.spacing(2),
   },
-  item: {},
-});
 
-const MainLayout: React.FC<WithStyles<typeof styles>> = (props) => {
-  const {classes, children} = props;
+  [`& .${classes.item}`]: {},
+}));
+
+const MainLayout: React.FC<{ children: any }> = ({children}) => {
+
   return (
-    <Grid container className={classes.root}>
+    <StyledGrid container className={classes.root}>
       <Hidden xsDown>
         <Grid item sm={2} md={3} lg={4}/>
       </Hidden>
@@ -41,9 +50,8 @@ const MainLayout: React.FC<WithStyles<typeof styles>> = (props) => {
       <Hidden xsDown>
         <Grid item sm={2} md={3} lg={4}/>
       </Hidden>
-    </Grid>
-
+    </StyledGrid>
   );
 };
 
-export default withStyles(styles)(MainLayout);
+export default (MainLayout);

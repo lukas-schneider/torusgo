@@ -1,8 +1,7 @@
-import {createTheme} from '@material-ui/core/styles';
+import {createTheme} from '@mui/material/styles';
 
 const globalTheme = createTheme({
   palette: {
-    type: 'dark',
     primary: {
       main: '#FF6F00',
       contrastText: '#000000',

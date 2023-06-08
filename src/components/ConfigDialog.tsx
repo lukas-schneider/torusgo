@@ -1,32 +1,41 @@
 import {
   Button,
-  createStyles,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   TextField,
-  WithStyles,
-  withStyles,
-}                  from '@material-ui/core';
+}                  from '@mui/material';
+import {styled}    from '@mui/material/styles';
 import * as React  from 'react';
 import {Component} from 'react';
 import {IRuleSet}  from '../shared/gameLogic';
 
-const styles = () => createStyles({
-  root: {},
-  content: {},
-  nameInput: {
+const PREFIX = 'ConfigDialog';
+
+const classes = {
+  root: `${PREFIX}-root`,
+  content: `${PREFIX}-content`,
+  nameInput: `${PREFIX}-nameInput`,
+  numberInput: `${PREFIX}-numberInput`,
+};
+
+const StyledDialog = styled(Dialog)(() => ({
+  [`&.${classes.root}`]: {},
+  [`& .${classes.content}`]: {},
+
+  [`& .${classes.nameInput}`]: {
     width: 'calc((100% - 2ch) / 2)',
     marginBottom: 8,
   },
-  numberInput: {
+
+  [`& .${classes.numberInput}`]: {
     width: 'calc((100% - 4ch) / 4)',
   },
-});
+}));
 
-interface IProps extends WithStyles<typeof styles> {
+interface IProps {
   onClose: (ruleSet: IRuleSet, white: string, black: string) => void,
   onCancel: () => void,
   open: boolean,
@@ -58,9 +67,9 @@ class ConfigDialog extends Component<IProps, IState> {
 
   render() {
     const {white, black, ruleSet} = this.state;
-    const {classes, onClose, onCancel, open, allowCancel} = this.props;
+    const {onClose, onCancel, open, allowCancel} = this.props;
     return (
-      <Dialog className={classes.root} open={open} disableEscapeKeyDown>
+      <StyledDialog className={classes.root} open={open} disableEscapeKeyDown>
         <DialogTitle>Local Game</DialogTitle>
         <DialogContent className={classes.content}>
           <DialogContentText>
@@ -130,11 +139,11 @@ class ConfigDialog extends Component<IProps, IState> {
         </DialogContent>
         <DialogActions>
           {allowCancel &&
-          <Button color={'primary'}
-                  type={'button'}
-                  onClick={onCancel}>
-            Cancel
-          </Button>
+            <Button color={'primary'}
+                    type={'button'}
+                    onClick={onCancel}>
+              Cancel
+            </Button>
           }
           <Button color={'primary'}
                   variant={'contained'}
@@ -143,9 +152,9 @@ class ConfigDialog extends Component<IProps, IState> {
             Start Game
           </Button>
         </DialogActions>
-      </Dialog>
+      </StyledDialog>
     );
   }
 }
 
-export default withStyles(styles)(ConfigDialog);
+export default (ConfigDialog);

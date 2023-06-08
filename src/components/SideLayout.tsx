@@ -1,8 +1,16 @@
-import {Grid, createStyles, WithStyles, withStyles, Theme} from '@material-ui/core';
-import * as React                                          from 'react';
+import {Grid}     from '@mui/material';
+import {styled}   from '@mui/material/styles';
+import * as React from 'react';
 
-const styles = (theme: Theme) => createStyles({
-  root: {
+const PREFIX = 'SideLayout';
+
+const classes = {
+  root: `${PREFIX}-root`,
+  item: `${PREFIX}-item`,
+};
+
+const StyledGrid = styled(Grid)(({theme}) => ({
+  [`&.${classes.root}`]: {
     position: 'absolute',
     right: 0,
     left: 0,
@@ -13,28 +21,32 @@ const styles = (theme: Theme) => createStyles({
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
   },
-  item: {
+
+  [`& .${classes.item}`]: {
     width: 380,
     zIndex: theme.zIndex.drawer,
   },
-});
+}));
 
-const SideLayout: React.FC<WithStyles<typeof styles>> = (props) => {
-  const {classes, children} = props;
+interface IProps {
+  children?: React.ReactNode;
+}
+
+const SideLayout: React.FC<IProps> = ({children}) => {
   return (
-    <Grid container
-          spacing={2}
-          className={classes.root}
-          direction={'column'}
-          justify-content={'flex-start'}
-          alignItems={'flex-end'}>
+    <StyledGrid container
+                spacing={2}
+                className={classes.root}
+                direction={'column'}
+                justify-content={'flex-start'}
+                alignItems={'flex-end'}>
       {React.Children.map(children, (child) =>
         <Grid item className={classes.item}>
           {child}
         </Grid>,
       )}
-    </Grid>
+    </StyledGrid>
   );
 };
 
-export default withStyles(styles)(SideLayout);
+export default (SideLayout);

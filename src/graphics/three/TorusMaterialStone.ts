@@ -21,6 +21,7 @@ uniform mat4 inverseProjectionMatrix;
 uniform mat4 inverseModelMatrix;
 uniform mat4 transposedInverseModelMatrix;
 uniform vec3 stoneColor;
+uniform float alpha;
 
 
 float iSphere(in vec3 ro, in vec3 rd) {
@@ -63,7 +64,7 @@ void main() {
 	col += 0.3*vec3(1.0,1.0,1.0) * pow(angle_to_eye, 10.0);
 	col += 0.3*vec3(1.0,1.0,1.0) * pow(angle_to_eye, 100.0);
   
-	gl_FragColor = vec4( col, 1.0 );
+	gl_FragColor = vec4( col, alpha );
 
   gl_FragDepthEXT = t_wc/10.0;
 }
@@ -81,6 +82,7 @@ export default class TorusMaterialStone extends ShaderMaterial {
         inverseModelMatrix: new Uniform(new Matrix4()),
         transposedInverseModelMatrix: new Uniform(new Matrix4()),
         stoneColor: new Uniform(new Vector3(1, 1, 1)),
+        alpha: new Uniform( 1.0),
       },
       vertexShader: vertexShader.concat(),
       fragmentShader: fragmentShader.concat(),

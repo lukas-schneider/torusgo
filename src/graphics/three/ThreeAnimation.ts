@@ -72,15 +72,15 @@ class ThreeAnimation extends AbstractAnimation {
   private thickness: number;
   private stoneSize: number = 0.05;
 
-  private cameraSpeed: number = 0.3;
+  private cameraSpeed: number = 0.1;
   private twistSpeed: number = 0.05;
   // for party
   private partyMode = false;
 
   private colorBoard = new Color(0xFF6B00);
   private colorStoneWhite = new Color(0xe6ffff);
+  private colorStoneWhiteHover = new Color(0xe6ffff);
   private colorStoneBlack = new Color(0x1a0008);
-  private colorStoneHover = new Color(0xFFD700);
 
   // ---- event handlers ----
 
@@ -390,11 +390,13 @@ class ThreeAnimation extends AbstractAnimation {
           }
           case EColor.Black: {
             mesh.visible = true;
+            material.uniforms.alpha.value = 1.0;
             material.uniforms.stoneColor.value = this.colorStoneBlack;
             break;
           }
           case EColor.White: {
             mesh.visible = true;
+            material.uniforms.alpha.value = 1.0;
             material.uniforms.stoneColor.value = this.colorStoneWhite;
             break;
           }
@@ -403,7 +405,19 @@ class ThreeAnimation extends AbstractAnimation {
 
       if (this.allowInput && this.selectedField && i === this.selectedField.y + y * this.selectedField.x) {
         mesh.visible = true;
-        material.uniforms.stoneColor.value = this.colorStoneHover;
+
+        switch (this.rawGame.toMove) {
+          case EColor.Black: {
+            material.uniforms.stoneColor.value = this.colorStoneBlack;
+            material.uniforms.alpha.value = 0.8;
+            break;
+          }
+          case EColor.White: {
+            material.uniforms.stoneColor.value = this.colorStoneWhiteHover;
+            material.uniforms.alpha.value = 0.8;
+            break;
+          }
+        }
       }
     }
   }

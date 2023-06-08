@@ -1,5 +1,5 @@
 import * as React   from 'react';
-import Reconnecting from '../components/Connecting';
+import Connecting   from '../components/Connecting';
 import Disconnected from '../components/Disconnected';
 import {EStatus}    from '../shared/types';
 import GameClient   from './GameClient';
@@ -38,7 +38,7 @@ const withClient = (client: GameClient) =>
           case EStatus.Connected:
             return <Component {...this.props}/>;
           case EStatus.Connecting:
-            return <Reconnecting/>;
+            return <Connecting/>;
           case EStatus.Disconnected:
             return <Disconnected/>;
         }

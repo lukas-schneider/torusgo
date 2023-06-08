@@ -3,7 +3,7 @@ import React, {Component}                                               from 're
 import {RouteComponentProps}                                            from 'react-router';
 import {execMove, initGame, regMove, testMove, IRuleSet, EColor, TMove} from '../shared/gameLogic';
 import {EGamePhase, IGameState}                                         from '../shared/types';
-import Animation                                                        from './AnimationCanvas';
+import AnimationCanvas                                                  from './AnimationCanvas';
 import ConfigDialog                                                     from './ConfigDialog';
 import ScoreBoard                                                       from './ScoreBoard';
 import SideLayout                                                       from './SideLayout';
@@ -30,15 +30,15 @@ export default class LocalGame extends Component<RouteComponentProps, IState> {
                       onCancel={() => this.setState({configOpen: false})}
                       onClose={this.setConfig}/>
         {game &&
-        <SideLayout>
-          <ScoreBoard game={game}/>
-        </SideLayout>
+          <SideLayout>
+            <ScoreBoard game={game}/>
+          </SideLayout>
         }
 
         {game &&
-        <Animation allowInput three
-                   rawGame={game.rawGame}
-                   onClick={(x, y) => this.testAndExecMove(regMove(x, y))}/>
+          <AnimationCanvas allowInput three
+                           rawGame={game.rawGame}
+                           onClick={(x, y) => this.testAndExecMove(regMove(x, y))}/>
         }
       </>
     );

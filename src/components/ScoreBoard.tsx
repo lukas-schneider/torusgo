@@ -1,30 +1,30 @@
-import {
-  Button,
-  createStyles,
-  Divider,
-  Paper,
-  Typography,
-  WithStyles,
-  withStyles,
-  Theme,
-}                                                               from '@material-ui/core';
+import {Button, Divider, Paper, Typography}                     from '@mui/material';
+import {styled}                                                 from '@mui/material/styles';
 import * as React                                               from 'react';
 import {EColor}                                                 from '../shared/gameLogic';
 import {EGamePhase, IGameState, IColorMap, IExtendedPlayerInfo} from '../shared/types';
 import {enumValues}                                             from '../shared/utils';
 import PlayerCard                                               from './PlayerCard';
 
-const styles = (theme: Theme) => createStyles({
-  root: {
+const PREFIX = 'ScoreBoard';
+
+const classes = {
+  root: `${PREFIX}-root`,
+  center: `${PREFIX}-center`,
+};
+
+const StyledPaper = styled(Paper)(({theme}) => ({
+  [`&.${classes.root}`]: {
     padding: theme.spacing(1),
   },
-  center: {
+
+  [`& .${classes.center}`]: {
     paddingTop: 5,
     paddingBottom: 5,
   },
-});
+}));
 
-interface IProps extends WithStyles<typeof styles> {
+interface IProps {
   game: IGameState,
   role?: EColor,
   onOpenConfig?: () => void,
@@ -48,7 +48,7 @@ function statusString(phase: EGamePhase): string {
 }
 
 const ScoreBoard: React.FC<IProps> = (props) => {
-  const {classes, game, onOpenConfig, onJoin, role} = props;
+  const {game, onOpenConfig, onJoin, role} = props;
 
   const players: Partial<IColorMap<IExtendedPlayerInfo>> = {};
 
@@ -62,7 +62,7 @@ const ScoreBoard: React.FC<IProps> = (props) => {
   }
 
   return (
-    <Paper square={true} className={classes.root}>
+    <StyledPaper square={true} className={classes.root}>
       <PlayerCard color={EColor.Black}
                   onJoin={onJoin}
                   player={players[EColor.Black]}/>
@@ -79,15 +79,15 @@ const ScoreBoard: React.FC<IProps> = (props) => {
                   onJoin={onJoin}
                   player={players[EColor.White]}/>
       {onOpenConfig &&
-      <Button fullWidth
-              color={'primary'}
-              type={'button'}
-              onClick={onOpenConfig}>
-        Restart Game
-      </Button>
+        <Button fullWidth
+                color={'primary'}
+                type={'button'}
+                onClick={onOpenConfig}>
+          Restart Game
+        </Button>
       }
-    </Paper>
+    </StyledPaper>
   );
 };
 
-export default withStyles(styles)(ScoreBoard);
+export default (ScoreBoard);

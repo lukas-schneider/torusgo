@@ -1,18 +1,24 @@
-import {createStyles, withStyles, Paper, Typography, Theme, Link} from '@material-ui/core';
-import * as React                                                 from 'react';
-import {Link as RouterLink}                                       from 'react-router-dom';
-import MainLayout                                                 from './MainLayout';
+import {Paper, Typography, Link} from '@mui/material';
+import {styled}                  from '@mui/material/styles';
+import * as React                from 'react';
+import {Link as RouterLink}      from 'react-router-dom';
+import MainLayout                from './MainLayout';
 
-const style = (theme: Theme) => createStyles({
-  paper: {
+const PREFIX = 'LandingPage';
+
+const classes = {
+  paper: `${PREFIX}-paper`,
+};
+
+const StyledMainLayout = styled(MainLayout)(({theme}) => ({
+  [`& .${classes.paper}`]: {
     padding: theme.spacing(3, 2),
   },
-});
+}));
 
-const LandingPage: React.FC = (props: any) => {
-  const {classes} = props;
+const LandingPage: React.FC = ({}) => {
   return (
-    <MainLayout>
+    <StyledMainLayout>
       <Paper className={classes.paper}>
         <Typography variant={'h4'}>
           Torus Go
@@ -25,8 +31,8 @@ const LandingPage: React.FC = (props: any) => {
           Click <Link component={RouterLink} to={'/game/asdf'}>here</Link> to play an online game
         </Typography>
       </Paper>
-    </MainLayout>
+    </StyledMainLayout>
   );
 };
 
-export default withStyles(style)(LandingPage);
+export default (LandingPage);

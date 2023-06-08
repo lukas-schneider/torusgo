@@ -47,10 +47,10 @@ export default class Grid extends Group {
   private addLine(x1: number, y1: number, x2: number, y2: number) {
     const geometry = new BufferGeometry();
 
-    geometry.addAttribute('position', new Float32BufferAttribute([
+    geometry.attributes['position'] = new Float32BufferAttribute([
       x1, y1, 0, // v1
       x2, y2, 0, // v2
-    ], 3));
+    ], 3);
 
     this.lines.push(new Line(geometry, this.material));
   }

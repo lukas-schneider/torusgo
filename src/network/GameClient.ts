@@ -1,6 +1,6 @@
 import Debug                                               from 'debug';
 import {EventEmitter}                                      from 'events';
-import SocketIO                                            from 'socket.io-client';
+import {Socket, connect}                                            from 'socket.io-client';
 import {EColor, TMove}                                     from '../shared/gameLogic';
 import {EStatus, EClientEvent, EServerEvent, EStatusEvent} from '../shared/types';
 import {enumValues}                                        from '../shared/utils';
@@ -40,7 +40,7 @@ export default class GameClient extends EventEmitter {
 
   };
 
-  public socket: typeof SocketIO.Socket;
+  public socket: Socket;
   public status: EStatus;
   public reconnectAttempts = 0;
 
@@ -48,7 +48,7 @@ export default class GameClient extends EventEmitter {
     super();
 
     this.status = EStatus.Connecting;
-    this.socket = SocketIO.connect({...GameClient.options});
+    this.socket = connect({...GameClient.options});
 
     debug('socket.io initialized with options %o', GameClient.options);
 

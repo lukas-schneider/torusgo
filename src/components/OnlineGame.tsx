@@ -1,4 +1,4 @@
-import {Typography, LinearProgress, Paper} from '@material-ui/core';
+import {Typography, LinearProgress, Paper} from '@mui/material';
 import {boundMethod}                       from 'autobind-decorator';
 import React, {Component}                  from 'react';
 import {RouteComponentProps}               from 'react-router';

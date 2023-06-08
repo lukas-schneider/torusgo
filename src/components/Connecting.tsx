@@ -1,18 +1,25 @@
-import {createStyles, WithStyles, LinearProgress, Typography, withStyles} from '@material-ui/core';
-import * as React                                                         from 'react';
-import MainLayout                                                         from './MainLayout';
+import {LinearProgress, Typography} from '@mui/material';
+import {styled}                     from '@mui/material/styles';
+import * as React                   from 'react';
+import MainLayout                   from './MainLayout';
 
-const styles = createStyles({
-  root: {},
+const PREFIX = 'Connecting';
+
+const classes = {
+  root: `${PREFIX}-root`,
+};
+
+const StyledMainLayout = styled(MainLayout)({
+  [`& .${classes.root}`]: {},
 });
 
-const Connecting: React.FC<WithStyles<typeof styles>> = ({classes}) => (
-  <MainLayout>
+const Connecting: React.FC = ({}) => (
+  <StyledMainLayout>
     <Typography variant={'h5'} align={'center'}>
       Connecting to the Game Server...
     </Typography>
     <LinearProgress/>
-  </MainLayout>
+  </StyledMainLayout>
 );
 
-export default withStyles(styles)(Connecting);
+export default (Connecting);

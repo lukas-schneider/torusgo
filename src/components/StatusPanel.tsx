@@ -1,39 +1,53 @@
-import {createStyles, Paper, Typography, WithStyles, withStyles, Theme} from '@material-ui/core';
-import {
-  green,
-  amber,
-}                                                                       from '@material-ui/core/colors';
-import {SignalCellularAlt}                                              from '@material-ui/icons';
-import * as React                                                       from 'react';
-import {EStatus}                                                        from '../shared/types';
+import {Paper, Typography} from '@mui/material';
+import {green, amber}      from '@mui/material/colors';
+import {styled}            from '@mui/material/styles';
+import {SignalCellularAlt} from '@mui/icons-material';
+import * as React          from 'react';
+import {EStatus}           from '../shared/types';
 
-const styles = (theme: Theme) => createStyles({
-  root: {
+const PREFIX = 'StatusPanel';
+
+const classes = {
+  root: `${PREFIX}-root`,
+  icon: `${PREFIX}-icon`,
+  disconnected: `${PREFIX}-disconnected`,
+  connecting: `${PREFIX}-connecting`,
+  connected: `${PREFIX}-connected`,
+  ping: `${PREFIX}-ping`,
+};
+
+const StyledPaper = styled(Paper)(({theme}) => ({
+  [`&.${classes.root}`]: {
     position: 'relative',
     padding: theme.spacing(1),
   },
-  icon: {
+
+  [`& .${classes.icon}`]: {
     position: 'relative',
     //bottom: theme.spacing(1),
     top: 2,
     width: theme.typography.subtitle2.fontSize,
     height: theme.typography.subtitle2.fontSize,
   },
-  disconnected: {
+
+  [`& .${classes.disconnected}`]: {
     color: theme.palette.error.light,
   },
-  connecting: {
+
+  [`& .${classes.connecting}`]: {
     color: amber[700],
   },
-  connected: {
+
+  [`& .${classes.connected}`]: {
     color: green[600],
   },
-  ping: {
+
+  [`& .${classes.ping}`]: {
     float: 'right',
   },
-});
+}));
 
-interface IProps extends WithStyles<typeof styles> {
+interface IProps {
   status: EStatus,
   latency: number,
 }
@@ -51,7 +65,7 @@ function statusString(status: EStatus) {
 }
 
 const StatusPanel: React.FC<IProps> = (props) => {
-  const {classes, status, latency} = props;
+  const {status, latency} = props;
 
   let iconClass = classes.icon;
   let latencyText;
@@ -73,14 +87,14 @@ const StatusPanel: React.FC<IProps> = (props) => {
 
 
   return (
-    <Paper square={true} className={classes.root}>
+    <StyledPaper square={true} className={classes.root}>
       <div className={classes.ping}>
         <SignalCellularAlt className={iconClass}/>
         <Typography variant={'subtitle2'} component={'span'}> {latencyText}</Typography>
       </div>
       <Typography variant={'h5'}> Torus Go</Typography>
-    </Paper>
+    </StyledPaper>
   );
 };
 
-export default withStyles(styles)(StatusPanel);
+export default (StatusPanel);

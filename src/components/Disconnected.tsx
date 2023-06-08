@@ -1,13 +1,20 @@
-import {createStyles, WithStyles, Typography, withStyles} from '@material-ui/core';
-import * as React                                         from 'react';
-import MainLayout                                         from './MainLayout';
+import {Typography} from '@mui/material';
+import {styled}     from '@mui/material/styles';
+import * as React   from 'react';
+import MainLayout   from './MainLayout';
 
-const styles = createStyles({
-  root: {},
+const PREFIX = 'Disconnected';
+
+const classes = {
+  root: `${PREFIX}-root`,
+};
+
+const StyledMainLayout = styled(MainLayout)({
+  [`& .${classes.root}`]: {},
 });
 
-const Disconnected: React.FC<WithStyles<typeof styles>> = ({classes}) => (
-  <MainLayout>
+const Disconnected: React.FC = ({}) => (
+  <StyledMainLayout>
     <Typography variant={'h5'}>
       Connection Failed
     </Typography>
@@ -15,7 +22,7 @@ const Disconnected: React.FC<WithStyles<typeof styles>> = ({classes}) => (
     <Typography variant={'body1'}>
       A connection to the game server could not be established. Try reloading the page.
     </Typography>
-  </MainLayout>
+  </StyledMainLayout>
 );
 
-export default withStyles(styles)(Disconnected);
+export default (Disconnected);

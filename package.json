@@ -1,20 +1,24 @@
 {
-  "name": "torusgo-minimal",
+  "name": "torusgo",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@material-ui/icons": "latest",
-    "autobind-decorator": "latest",
-    "debug": "latest",
-    "react": "latest",
-    "react-autobind": "latest",
-    "react-dom": "latest",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.13.4",
+    "autobind-decorator": "^2.4.0",
+    "react": "^18.2.0",
+    "react-autobind": "^1.0.6",
+    "react-dom": "^18.2.0",
     "react-router-dom": "^5.3.4",
-    "react-scripts": "latest",
-    "socket.io-client": "latest",
-    "stats.js": "latest",
-    "three": "latest",
-    "typescript": "latest"
+    "react-scripts": "5.0.1",
+    "socket.io-client": "^4.6.2",
+    "stats.js": "^0.17.0",
+    "three": "^0.153.0",
+    "tss-react": "^4.8.6",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -38,16 +42,14 @@
     ]
   },
   "devDependencies": {
-    "@material-ui/core": "latest",
-    "@types/debug": "latest",
-    "@types/jest": "latest",
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
+    "@types/debug": "^4.1.8",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^18.16.16",
+    "@types/react": "^18.2.9",
+    "@types/react-dom": "^18.2.4",
     "@types/react-router-dom": "^5.3.3",
-    "@types/socket.io-client": "latest",
-    "@types/stats.js": "latest",
-    "@types/three": "latest",
-    "http-proxy-middleware": "latest"
+    "@types/stats.js": "^0.17.0",
+    "@types/three": "^0.152.1",
+    "http-proxy-middleware": "^2.0.6"
   }
 }

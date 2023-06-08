@@ -1,18 +1,23 @@
-import {WithStyles, WithTheme, createStyles, withStyles, withTheme} from '@material-ui/core';
-import {boundMethod}                                                from 'autobind-decorator';
-import * as React                                                   from 'react';
-import Stats                                                        from 'stats.js';
-import {Vector2, WebGLRenderer, Color}                              from 'three';
-import AbstractAnimation
-                                                                    from '../graphics/AbstractAnimation';
-import ThreeAnimation, {EKeys}                                      from '../graphics/three/ThreeAnimation';
-import TwoAnimation
-                                                                    from '../graphics/two/TwoAnimation';
-import {IRawGame}                                                   from '../shared/gameLogic';
-import {contains}                                                   from '../shared/utils';
+import {styled}                        from '@mui/material/styles';
+import {boundMethod}                   from 'autobind-decorator';
+import * as React                      from 'react';
+import Stats                           from 'stats.js';
+import {Vector2, WebGLRenderer, Color} from 'three';
+import globalTheme                     from '../globalTheme';
+import AbstractAnimation               from '../graphics/AbstractAnimation';
+import ThreeAnimation, {EKeys}         from '../graphics/three/ThreeAnimation';
+import TwoAnimation                    from '../graphics/two/TwoAnimation';
+import {IRawGame}                      from '../shared/gameLogic';
+import {contains}                      from '../shared/utils';
 
-const styles = createStyles({
-  root: {
+const PREFIX = 'AnimationCanvas';
+
+const classes = {
+  root: `${PREFIX}-root`,
+};
+
+const StyledCanvas = styled('canvas')({
+  [`& .${classes.root}`]: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -21,7 +26,7 @@ const styles = createStyles({
   },
 });
 
-interface IProps extends WithStyles<typeof styles>, WithTheme {
+interface IProps {
   three?: boolean,
   allowInput: boolean,
   rawGame: IRawGame,
@@ -58,7 +63,7 @@ class AnimationCanvas extends React.Component<IProps> {
   // ---- lifecycle methods ----
 
   public componentDidMount() {
-    const {background, primary} = this.props.theme.palette;
+    const {background, primary} = globalTheme.palette;
 
     this.backgroundColor.setStyle(background.default);
     this.boardColor.setStyle(primary.main);
@@ -66,10 +71,10 @@ class AnimationCanvas extends React.Component<IProps> {
     this.init();
 
     window.addEventListener('resize', this.handleResize);
-    this.canvas.addEventListener('mousemove', this.handleMouseMove);
-    this.canvas.addEventListener('click', this.handleMouseClick);
-    this.canvas.addEventListener('keydown', this.handleKeyDown);
-    this.canvas.addEventListener('keyup', this.handleKeyUp);
+    window.addEventListener('mousemove', this.handleMouseMove);
+    window.addEventListener('click', this.handleMouseClick);
+    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
   }
 
   public componentDidUpdate(prevProps: Readonly<IProps>) {
@@ -90,19 +95,19 @@ class AnimationCanvas extends React.Component<IProps> {
     this.cleanUp();
 
     window.removeEventListener('resize', this.handleResize);
-    this.canvas.removeEventListener('mousemove', this.handleMouseMove);
-    this.canvas.removeEventListener('click', this.handleMouseClick);
-    this.canvas.removeEventListener('keydown', this.handleKeyDown);
-    this.canvas.removeEventListener('keyup', this.handleKeyUp);
+    window.removeEventListener('mousemove', this.handleMouseMove);
+    window.removeEventListener('click', this.handleMouseClick);
+    window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('keyup', this.handleKeyUp);
   }
 
   public render() {
     return (
-      <canvas className={this.props.classes.root}
-              tabIndex={0}
-              width={'100%'}
-              height={'100%'}
-              ref={(canvas) => this.canvas = canvas!}/>
+      <StyledCanvas className={classes.root}
+                    tabIndex={0}
+                    width={'100%'}
+                    height={'100%'}
+                    ref={(canvas) => this.canvas = canvas!}/>
     );
   }
 
@@ -177,15 +182,9 @@ class AnimationCanvas extends React.Component<IProps> {
 
   private initRenderer() {
     this.renderer = new WebGLRenderer({canvas: this.canvas});
-
-    this.renderer.getContext().getExtension('EXT_frag_depth');
-
-    const ext = this.renderer.getContext().getSupportedExtensions();
-    if (!ext || ext.indexOf('EXT_frag_depth') === -1) {
-      console.error('EXT_frag_depth extension not supported! 3D view not available!');
-    }
-
     this.renderer.setClearColor(this.backgroundColor, 1);
+    this.renderer.getContext().enable(WebGL2RenderingContext.BLEND);
+    this.renderer.getContext().blendFunc(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
   }
 
   private initStats() {
@@ -233,4 +232,4 @@ class AnimationCanvas extends React.Component<IProps> {
 
 }
 
-export default withTheme(withStyles(styles)(AnimationCanvas));
+export default AnimationCanvas;
