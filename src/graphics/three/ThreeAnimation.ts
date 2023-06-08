@@ -77,7 +77,7 @@ class ThreeAnimation extends AbstractAnimation {
   // for party
   private partyMode = false;
 
-  private colorBoard = new Color(0xFF6B00);
+  private colorBoard = new Color(0xff9100);
   private colorStoneWhite = new Color(0xe6ffff);
   private colorStoneWhiteHover = new Color(0xe6ffff);
   private colorStoneBlack = new Color(0x1a0008);

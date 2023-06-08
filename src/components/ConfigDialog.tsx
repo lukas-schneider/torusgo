@@ -5,8 +5,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField,
-}                  from '@mui/material';
+  TextField, Divider,
+} from '@mui/material';
 import {styled}    from '@mui/material/styles';
 import * as React  from 'react';
 import {Component} from 'react';
@@ -21,16 +21,22 @@ const classes = {
   numberInput: `${PREFIX}-numberInput`,
 };
 
-const StyledDialog = styled(Dialog)(() => ({
-  [`&.${classes.root}`]: {},
-  [`& .${classes.content}`]: {},
+const StyledDialog = styled(Dialog)(({theme}) => ({
+  [`&.${classes.root}`]: {
+    theme
+  },
+  [`& .${classes.content}`]: {
+    theme
+  },
 
   [`& .${classes.nameInput}`]: {
+    theme,
     width: 'calc((100% - 2ch) / 2)',
     marginBottom: 8,
   },
 
   [`& .${classes.numberInput}`]: {
+    theme,
     width: 'calc((100% - 4ch) / 4)',
   },
 }));
@@ -70,11 +76,9 @@ class ConfigDialog extends Component<IProps, IState> {
     const {onClose, onCancel, open, allowCancel} = this.props;
     return (
       <StyledDialog className={classes.root} open={open} disableEscapeKeyDown>
-        <DialogTitle>Local Game</DialogTitle>
+        <DialogTitle>Play Go on a torus!</DialogTitle>
+        <Divider key={'h2'}/>
         <DialogContent className={classes.content}>
-          <DialogContentText>
-            Play against yourself (or another player) on this device.
-          </DialogContentText>
           <TextField autoFocus
                      label={'black'}
                      name={'blackName'}

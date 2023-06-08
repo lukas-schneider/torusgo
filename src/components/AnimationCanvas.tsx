@@ -1,3 +1,4 @@
+import {withTheme, useTheme}           from '@mui/material';
 import {styled}                        from '@mui/material/styles';
 import {boundMethod}                   from 'autobind-decorator';
 import * as React                      from 'react';
@@ -33,7 +34,7 @@ interface IProps {
   onClick: (x: number, y: number) => void,
 }
 
-class AnimationCanvas extends React.Component<IProps> {
+class AnimationCanvas extends React.Component<IProps & { theme: any }> {
   /*
  * world space has domain [-a, a] for x (left to right) and [-b, b] for y (bottom to top),
  * where a and b are set so that the board is visible.
@@ -56,17 +57,16 @@ class AnimationCanvas extends React.Component<IProps> {
   private mouse = new Vector2();
 
   private backgroundColor = new Color(0x4286f4);
-  private boardColor = new Color(0xFF6B00);
+  private boardColor = new Color(0xFF6F00);
 
   private stats: Stats;
 
   // ---- lifecycle methods ----
 
   public componentDidMount() {
-    const {background, primary} = globalTheme.palette;
+    const {background, primary} = this.props.theme.palette;
 
     this.backgroundColor.setStyle(background.default);
-    this.boardColor.setStyle(primary.main);
 
     this.init();
 
@@ -184,7 +184,8 @@ class AnimationCanvas extends React.Component<IProps> {
     this.renderer = new WebGLRenderer({canvas: this.canvas});
     this.renderer.setClearColor(this.backgroundColor, 1);
     this.renderer.getContext().enable(WebGL2RenderingContext.BLEND);
-    this.renderer.getContext().blendFunc(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
+    this.renderer.getContext()
+      .blendFunc(WebGL2RenderingContext.SRC_ALPHA, WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA);
   }
 
   private initStats() {
@@ -232,4 +233,11 @@ class AnimationCanvas extends React.Component<IProps> {
 
 }
 
-export default AnimationCanvas;
+const AnimationCanvasWithTheme: React.FC<IProps> = (props: IProps) => <AnimationCanvas
+  allowInput={props.allowInput}
+  rawGame={props.rawGame}
+  three={props.three}
+  onClick={props.onClick}
+  theme={useTheme()}/>;
+
+export default AnimationCanvasWithTheme;

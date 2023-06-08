@@ -5,24 +5,28 @@ import {execMove, initGame, regMove, testMove, IRuleSet, EColor, TMove} from '..
 import {EGamePhase, IGameState}                                         from '../shared/types';
 import AnimationCanvas                                                  from './AnimationCanvas';
 import ConfigDialog                                                     from './ConfigDialog';
+import QuickSettings                                                    from './QuickSettings';
 import ScoreBoard                                                       from './ScoreBoard';
 import SideLayout                                                       from './SideLayout';
 
 interface IState {
   game?: IGameState,
   configOpen: boolean,
+  three: boolean
 }
-
-export default class LocalGame extends Component<RouteComponentProps, IState> {
-  constructor(props: RouteComponentProps) {
+type IProps = RouteComponentProps & { setDarkMode: (darkMode: boolean) => void, darkMode: boolean };
+export default class LocalGame extends Component<IProps, IState> {
+  constructor(props: IProps) {
     super(props);
     this.state = {
       configOpen: true,
+      three: true,
     };
   }
 
   public render() {
-    const {game, configOpen} = this.state;
+    const {darkMode, setDarkMode} = this.props;
+    const {game, configOpen, three} = this.state;
     return (
       <>
         <ConfigDialog open={configOpen}
@@ -32,12 +36,13 @@ export default class LocalGame extends Component<RouteComponentProps, IState> {
         {game &&
           <SideLayout>
             <ScoreBoard game={game}/>
+            <QuickSettings three={three} setThree={(three) => this.setState({three})}
+                           darkMode={darkMode} setDarkMode={setDarkMode} reset={() => this.setState({game: undefined, configOpen: true})}/>
           </SideLayout>
         }
 
         {game &&
-          <AnimationCanvas allowInput three
-                           rawGame={game.rawGame}
+          <AnimationCanvas allowInput three={three} rawGame={game.rawGame}
                            onClick={(x, y) => this.testAndExecMove(regMove(x, y))}/>
         }
       </>
